@@ -15,16 +15,21 @@ console.log("Starting server...");
 
 
 app.post("/ask", async (req, res) => {
-  const { question } = req.body;
-  if (!question) {
+  const { prompt, model, systemMessage } = req.body;
+  if (!prompt) {
     res.status(400).send("Please provide a question in the request body.");
   } else {
     try {
       const response = await ollama.chat({
-        model: "mistral",
+        // model: "mistral",
+        model: model,
+
         messages: [
-          { role: "system", content: "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc." },
-          { role: "user", content: question },
+          {
+            role: "system",
+            content: systemMessage,
+          },
+          { role: "user", content: prompt },
         ],
       });
       res.status(200).send(response.message.content);

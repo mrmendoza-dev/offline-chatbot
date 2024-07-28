@@ -56,7 +56,7 @@ import {
   faEye,
   faLayerGroup,
   faFire,
-
+  faCircleNotch,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const icons = {
@@ -110,4 +110,5 @@ export const icons = {
   faEye,
   faLayerGroup,
   faFire,
+  faCircleNotch,
 };

@@ -17,7 +17,7 @@ function ApplicationShell() {
       <div className="ApplicationShell w-screen h-screen">
         <div className="antialiased bg-gray-50 dark:bg-gray-900 h-full">
           <Nav />
-          <Sidebar />
+          {/* <Sidebar /> */}
           <Main />
         </div>
       </div>
