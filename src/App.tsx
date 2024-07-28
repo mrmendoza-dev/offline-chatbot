@@ -1,10 +1,12 @@
-
 import ApplicationShell from "@components/ApplicationShell/ApplicationShell";
+import { useChatContext, ChatProvider } from "@contexts/ChatContext";
 
 function App() {
   return (
     <div className="App">
-      <ApplicationShell />
+      <ChatProvider>
+        <ApplicationShell />
+      </ChatProvider>
     </div>
   );
 }

@@ -4,90 +4,30 @@ import LoaderButton from "@components/ui/LoaderButton";
 import { marked, use } from "marked";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "@assets/icons";
-
-const models = ["mistral", "llama3.1:8b"];
+import ToastError from "@components/ui/ToastError";
+import { useChatContext } from "@contexts/ChatContext";
 
 const ChatComponent = () => {
-  const [prompt, setPrompt] = useState("");
-  const [userPromptPlaceholder, setUserPromptPlaceholder] = useState(null);
-  const [responseStream, setResponseStream] = useState("");
-  const [currentModel, setCurrentModel] = useLocalStorage(
-    "currentOfflineModel",
-    models[0]
-  );
-  const [errorMessage, setErrorMessage] = useState(null);
+  const {
+    prompt,
+    setPrompt,
+    currentModel,
+    setCurrentModel,
+    systemMessage,
+    setSystemMessage,
+    handleAskPrompt,
+    handleKeyDown,
+    setConversationHistory,
 
-  const [systemMessage, setSystemMessage] = useLocalStorage(
-    "systemMessage",
-    "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc."
-  );
-  const [responseStreamLoading, setResponseStreamLoading] = useState(false);
-  const [conversationHistory, setConversationHistory] = useLocalStorage(
-    "conversationHistory",
-    []
-  );
+    errorMessage,
+    setErrorMessage,
 
-  const handleAskPrompt = async (event) => {
-    event.preventDefault();
-    const userPrompt = prompt;
-    if (!userPrompt) return;
-
-    setPrompt("");
-    setUserPromptPlaceholder(userPrompt);
-
-    setResponseStream("");
-    setResponseStreamLoading(true);
-
-    try {
-      const res = await fetch("http://localhost:3000/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          conversationHistory,
-          prompt: userPrompt,
-          model: currentModel,
-          systemMessage,
-        }),
-      });
-
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder("utf-8");
-      let botresponseStream = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        botresponseStream += chunk;
-        setResponseStream((prev) => prev + chunk);
-      }
-
-      // Update conversation history with bot's responseStream
-      setConversationHistory((prevHistory) => [
-        ...prevHistory,
-        { role: "user", content: userPrompt },
-
-        { role: "assistant", content: botresponseStream },
-      ]);
-    } catch (error) {
-      console.error("Error asking question:", error);
-      setErrorMessage("An error occurred. Please try again.");
-    } finally {
-      setResponseStreamLoading(false);
-      setUserPromptPlaceholder(null);
-    }
-  };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      event.preventDefault();
-      handleAskPrompt(event);
-    }
-  };
-
-  const messagesEndRef = useRef(null);
+    userPromptPlaceholder,
+    responseStream,
+    responseStreamLoading,
+    conversationHistory,
+    messagesEndRef,
+  } = useChatContext();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -99,61 +39,6 @@ const ChatComponent = () => {
 
   return (
     <div className="flex flex-col relative mx-auto w-full h-full text-left">
-      <form
-        className="flex gap-4 relative mx-auto w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-left"
-        action=""
-        onClick={(e) => e.preventDefault()}
-      >
-        <div className="">
-          <label
-            htmlFor="modelSelect"
-            className="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-          >
-            Model select
-          </label>
-
-          <select
-            id="modelSelect"
-            className="block w-full p-2 mb-6 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-            value={currentModel}
-            onChange={(e) => setCurrentModel(e.target.value)}
-          >
-            {models.map((model) => (
-              <option key={model} value={model}>
-                {model}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="w-full">
-          <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
-            System Message
-          </label>
-          <textarea
-            value={systemMessage}
-            onChange={(e) => setSystemMessage(e.target.value)}
-            className="resize-none bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-          />
-        </div>
-        <button
-          type="button"
-          onClick={() => setConversationHistory([])}
-          className="place-self-center
-          py-2.5 px-5 whitespace-nowrap text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-        >
-          Clear Chat
-        </button>
-        {/* <button
-          onClick={() => {
-            console.log(conversationHistory);
-          }}
-        >
-          TEST
-        </button> */}
-      </form>
-
-
       <div className="text-left p-6 markdown overflow-auto mx-auto w-full max-w-5xl h-full flex flex-col gap-4">
         {conversationHistory.map((entry, index) => (
           <div
@@ -244,30 +129,3 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
-
-const ToastError = ({ message, onClose, className }) => {
-  return (
-    <div
-      id="toast-error"
-      className={`${className}
-                        flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 border border-gray-200 dark:border-gray-600`}
-      role="alert"
-    >
-      <div className="text-sm font-normal">{message}</div>
-      <div
-        className="flex items
-      -center ms-auto space-x-2 rtl:space-x-reverse"
-      >
-        <button
-          type="button"
-          className="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
-          data-dismiss-target="#toast-error"
-          aria-label="Close"
-          onClick={onClose}
-        >
-          <FontAwesomeIcon icon={icons.faXmark} className="size-5" />
-        </button>
-      </div>
-    </div>
-  );
-};
