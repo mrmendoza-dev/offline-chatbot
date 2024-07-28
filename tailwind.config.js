@@ -47,6 +47,7 @@ module.exports = {
     },
 
     extend: {
+      
       colors: {
         ...colors,
         // gray: colors.neutral,

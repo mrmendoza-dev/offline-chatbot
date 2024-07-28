@@ -22,6 +22,7 @@ import {
   faBookmark as faBookmarkFilled,
   faHeart as faHeartFilled,
   faLightbulb as faLightbulbFilled,
+  faCircleArrowUp,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faStar as faStarEmpty,
@@ -57,6 +58,8 @@ import {
   faLayerGroup,
   faFire,
   faCircleNotch,
+  faMicrophone,
+  faPaperclip,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const icons = {
@@ -111,4 +114,7 @@ export const icons = {
   faLayerGroup,
   faFire,
   faCircleNotch,
+  faCircleArrowUp,
+  faMicrophone,
+  faPaperclip,
 };

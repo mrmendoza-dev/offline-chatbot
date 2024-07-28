@@ -1,15 +1,12 @@
-
 @import "variables";
 @import "mixins";
 @import "tailwind";
-
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
-
 
 html {
   scroll-behavior: smooth;
@@ -35,29 +32,78 @@ img {
   display: block;
 }
 
-
-
 a {
   text-decoration: none;
   color: inherit;
 }
 
-
 button {
   cursor: pointer;
 }
-
 
 ul {
   list-style: none;
 }
 
-
 .App {
+}
 
+input,
+textarea,
+select {
+  background-color: black;
 }
 
 
-input, textarea, select {
-    background-color: black;
+/* Hide scrollbar for IE, Edge and Firefox */
+* {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+*::-webkit-scrollbar {
+    width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #1e1e1e;
+    border-radius: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: #555;
+    border-radius: 10px;
+    border: 3px solid #1e1e1e;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #888;
+}
+
+
+
+
+.markdown {
+  pre,
+  code {
+    font-size: 1rem;
+    padding: 1em;
+    border-radius: 0.5rem;
+
+    word-break: break-all;
+    white-space: pre-wrap;
+  }
+
+  pre {
+    overflow: auto;
+    max-width: 100%;
+  }
+
+  code {
+    display: block;
+    overflow-x: auto;
+
+    background-color: rgba(0, 0, 0, 0.25);
+    color: #fff;
+  }
 }
