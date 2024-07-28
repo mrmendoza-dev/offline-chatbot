@@ -4,11 +4,9 @@ import LoaderButton from "@components/ui/LoaderButton";
 import { marked } from "marked";
 
 
-
 const models = [
   "mistral", "llama3.1:8b"
 ]
-
 
 const ChatComponent = () => {
   const [prompt, setPrompt] = useState("");
@@ -17,10 +15,6 @@ const ChatComponent = () => {
 
   const [systemMessage, setSystemMessage] = useLocalStorage("systemMessage", "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc.");
   const [responseLoading, setResponseLoading] = useState(false);
-
-
-
-
 
 
   const handleAskPrompt = async (event) => {
@@ -52,7 +46,6 @@ const ChatComponent = () => {
         handleAskPrompt(event);
       }
     };
-
 
     //   const customRenderer: any = new marked.Renderer();
     //   customRenderer.heading = (text, level) => {

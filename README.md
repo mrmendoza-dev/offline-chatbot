@@ -1,18 +1,12 @@
-# Vite React Template
-Template built for React projects with Vite loaded with popular libraries and tools.
+# Local AI
+Simple chat interface built in React and Vite to interact with AI models offline using Ollama.
 
 ## Resources
-- [Favicon](https://favicon.io/)
-- [TailwindCSS](https://tailwindcss.com/docs/installation)
-- [Flowbite](https://flowbite.com/docs/getting-started/quickstart/)
-- [Vite](https://vitejs.dev/guide/)
-- [Favicon Creator](https://favicon.io/)
-- [Supabase](https://supabase.com/docs)
-- [Firebase](https://firebase.google.com/)
-- [Netlify](https://docs.netlify.com/)
+- [Ollama](https://ollama.com/)
+- [llama3.1 Model](https://ollama.com/library/llama3.1)
+- [mistral Model](https://ollama.com/library/mistral)
 
 ## TODO
-- Add HTML meta tags, SEO tags
-- Custom .gitigore
-- Basic server.js
-
+- Add long term memory by saving the conversation history
+- Switch between different chats
+- Render Markdown cleanly
