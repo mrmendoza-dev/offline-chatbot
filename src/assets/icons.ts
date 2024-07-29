@@ -60,6 +60,7 @@ import {
   faCircleNotch,
   faMicrophone,
   faPaperclip,
+  faFile,
 } from "@fortawesome/free-solid-svg-icons";
 
 export const icons = {
@@ -117,4 +118,5 @@ export const icons = {
   faCircleArrowUp,
   faMicrophone,
   faPaperclip,
+  faFile,
 };

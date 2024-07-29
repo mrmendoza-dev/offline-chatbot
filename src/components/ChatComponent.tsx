@@ -27,6 +27,10 @@ const ChatComponent = () => {
     responseStreamLoading,
     conversationHistory,
     messagesEndRef,
+
+    handleFileUpload,
+    removeFile,
+    uploadedFiles,
   } = useChatContext();
 
   const scrollToBottom = () => {
@@ -78,7 +82,7 @@ const ChatComponent = () => {
 
       <div
         className="
-            relative max-w-5xl mx-auto w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-left"
+            relative max-w-5xl mx-auto w-full p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-left"
       >
         {errorMessage && (
           <ToastError
@@ -88,6 +92,31 @@ const ChatComponent = () => {
           />
         )}
 
+        <div>
+          <div className="mb-2 flex gap-2 overflow-x-auto w-full">
+            {uploadedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="overflow-hidden flex gap-2 max-w-sm w-min py-2 px-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
+                onClick={() => removeFile(index)}
+                // onClick={() => console.log(typeof(file.content))}
+              >
+                <div className="flex items-center justify-center min-w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-700">
+                  <FontAwesomeIcon icon={icons.faFile} className="size-5" />
+                </div>
+                <div className="overflow-hidden">
+                  <h5 className="text-sm text-gray-900 dark:text-white truncate">
+                    {file.name}
+                  </h5>
+                  <p className="text-sm text-gray-700 dark:text-gray-400">
+                    {file.type}
+                  </p>
+                  {/* <pre>{file.content}</pre> */}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
         <div className="flex items-start">
           <button
             type="button"
@@ -99,12 +128,15 @@ const ChatComponent = () => {
             <FontAwesomeIcon icon={icons.faMicrophone} className="size-5" />
           </button>
 
-          <button
-            type="button"
-            className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-blue-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          >
+          <label className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-blue-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 cursor-pointer">
+            <input
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+            />
             <FontAwesomeIcon icon={icons.faPaperclip} className="size-5" />
-          </button>
+          </label>
 
           <textarea
             placeholder="Ask me anything"

@@ -37,14 +37,35 @@ export const ChatProvider = ({ children }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const generateFileString = () => {
+    if (uploadedFiles.length > 0) {
+      return uploadedFiles
+        .map((file) => {
+          return `File Name: ${file.name}\nFile Type: ${file.type}\nContent:\n${file.content}\n\n`;
+        })
+        .join("--------------------------------------------------\n");
+    }
+    return "";
+  };
+
   useEffect(() => {
     scrollToBottom();
   }, [conversationHistory, responseStream, userPromptPlaceholder]);
 
   const handleAskPrompt = async (event) => {
     event.preventDefault();
-    const userPrompt = prompt;
-    if (!userPrompt) return;
+    if (!prompt) return;
+
+    let userPrompt = "";
+
+    userPrompt = prompt;
+
+    if (uploadedFiles.length > 0) {
+      const fileString = generateFileString();
+      userPrompt = `${prompt}\n\nUploaded files: ${fileString}`;
+    } else {
+      userPrompt = prompt;
+    }
 
     setPrompt("");
     setUserPromptPlaceholder(userPrompt);
@@ -90,6 +111,7 @@ export const ChatProvider = ({ children }) => {
     } finally {
       setResponseStreamLoading(false);
       setUserPromptPlaceholder(null);
+      setUploadedFiles([]);
     }
   };
 
@@ -98,6 +120,51 @@ export const ChatProvider = ({ children }) => {
       event.preventDefault();
       handleAskPrompt(event);
     }
+  };
+
+  const handleFileUpload = async (event) => {
+    const files = Array.from(event.target.files);
+    const acceptedFileTypes = ["application/json", "text/plain", "text/csv"];
+
+    const newFiles = await Promise.all(
+      files
+        .filter((file) => acceptedFileTypes.includes(file.type))
+        .map(async (file) => {
+          const content = await readFileContent(file);
+          return {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+            url: URL.createObjectURL(file),
+            content: content,
+          };
+        })
+    );
+    setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+  };
+
+  const readFileContent = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+      reader.readAsText(file);
+    });
+  };
+
+  const removeFile = (index) => {
+    setUploadedFiles((prevFiles) => prevFiles.filter((file, i) => i !== index));
+  };
+
+  const [uploadedFiles, setUploadedFiles] = useState([]);
+
+  const resetChat = () => {
+    setConversationHistory([]);
+    setUploadedFiles([]);
+    setPrompt("");
+    setResponseStream("");
+    setResponseStreamLoading(false);
   };
 
   return (
@@ -119,6 +186,11 @@ export const ChatProvider = ({ children }) => {
         handleAskPrompt,
         handleKeyDown,
         messagesEndRef,
+        handleFileUpload,
+        removeFile,
+        uploadedFiles,
+        setUploadedFiles,
+        resetChat,
       }}
     >
       {children}
