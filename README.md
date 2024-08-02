@@ -3,6 +3,7 @@ Simple chat interface built in React and Vite to interact with AI models offline
 - Select from locally downloaded models from Ollama
 - Live response streaming
 - Long term conversation memory saved to local storage
+- Upload text, CSV, or JSON files, currently limited due to context size
 
 ## Resources
 - [Ollama](https://ollama.com/)
@@ -13,3 +14,4 @@ Simple chat interface built in React and Vite to interact with AI models offline
 ## TODO
 - Switch between different chats
 - Render Markdown cleanly
+- Clean up uploaded file displaying plaintext during chat

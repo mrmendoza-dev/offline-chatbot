@@ -13,19 +13,17 @@ function FileUpload({ acceptedFileTypes, maxFileSizeMB, onFileUpload }: any) {
       const maxSizeInBytes = maxFileSizeMB * 1024 * 1024;
       const fileExtension = file.name.split(".").pop()?.toLowerCase();
 
-      // Check file size
       if (file.size > maxSizeInBytes) {
         setFileError(`File size exceeds ${maxFileSizeMB}MB.`);
-        event.target.value = ""; // Clear the input
-        onFileUpload(null); // Notify parent component of the error
+        event.target.value = "";
+        onFileUpload(null);
         return;
       }
 
-      // Check file type
       if (!fileExtension || !acceptedFileTypes.includes(fileExtension)) {
         setFileError(`Invalid file type.`);
-        event.target.value = ""; // Clear the input
-        onFileUpload(null); // Notify parent component of the error
+        event.target.value = "";
+        onFileUpload(null);
         return;
       }
 

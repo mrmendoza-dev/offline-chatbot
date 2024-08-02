@@ -9,7 +9,7 @@ const useThemeToggle = (): UseThemeToggle => {
     if (savedTheme) {
       return savedTheme === "dark";
     }
-    return true; // Default to dark mode if not specified
+    return true;
   });
 
   useEffect(() => {

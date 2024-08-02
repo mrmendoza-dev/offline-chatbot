@@ -99,7 +99,6 @@ const ChatComponent = () => {
                 key={index}
                 className="overflow-hidden flex gap-2 max-w-sm w-min py-2 px-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
                 onClick={() => removeFile(index)}
-                // onClick={() => console.log(typeof(file.content))}
               >
                 <div className="flex items-center justify-center min-w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-700">
                   <FontAwesomeIcon icon={icons.faFile} className="size-5" />
@@ -111,7 +110,6 @@ const ChatComponent = () => {
                   <p className="text-sm text-gray-700 dark:text-gray-400">
                     {file.type}
                   </p>
-                  {/* <pre>{file.content}</pre> */}
                 </div>
               </div>
             ))}

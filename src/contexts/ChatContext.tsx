@@ -1,4 +1,3 @@
-// ChatContext.js
 import React, {
   createContext,
   useContext,
@@ -99,7 +98,6 @@ export const ChatProvider = ({ children }) => {
         setResponseStream((prev) => prev + chunk);
       }
 
-      // Update conversation history with bot's responseStream
       setConversationHistory((prevHistory) => [
         ...prevHistory,
         { role: "user", content: userPrompt },
