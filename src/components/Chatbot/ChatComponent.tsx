@@ -32,6 +32,10 @@ const ChatComponent = () => {
     uploadedFiles,
   } = useChatContext();
 
+
+
+
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -132,7 +136,7 @@ const ChatComponent = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             className="
-            resize-none bg-gray-50 text-gray-900 text-base block w-full p-2.5 dark:bg-gray-800 dark:placeholder-gray-400 dark:text-white border-none focus:outline-none focus:ring-0 focus:border-0 max-h-32"
+            resize-none text-gray-900 text-base block w-full p-2.5 bg-transparent dark:placeholder-gray-400 dark:text-white border-none focus:outline-none focus:ring-0 focus:border-0 max-h-32"
           />
           <LoaderButton
             onClick={handleAskPrompt}
@@ -150,14 +154,3 @@ const ChatComponent = () => {
 
 export default ChatComponent;
 
-{
-  /* <button
-            type="button"
-            onClick={() => {
-              navigator.mediaDevices.getUserMedia({ audio: true });
-            }}
-            className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          >
-            <FontAwesomeIcon icon={icons.faMicrophone} className="size-5" />
-          </button> */
-}

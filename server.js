@@ -8,9 +8,7 @@ const port = 3000;
 app.use(cors());
 app.use(express.json());
 
-
 console.log("Starting server...");
-
 
 app.post("/ask", async (req, res) => {
   const { conversationHistory, prompt, model, systemMessage } = req.body;
@@ -50,7 +48,6 @@ app.post("/ask", async (req, res) => {
     console.log(error);
   }
 });
-
 
 
 app.listen(port, () => {

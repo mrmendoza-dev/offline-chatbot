@@ -7,10 +7,31 @@ import React, {
 } from "react";
 import useLocalStorage from "@hooks/useLocalStorage";
 
-const ChatContext = React.createContext(null);
+const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }) => {
-  const models = ["mistral", "llama3.1:8b"];
+  const [models, setModels] = useState([]);
+
+  // Fetches the installed models from the Ollama API, port 11434 is the default port for Ollama
+  async function fetchInstalledModels() {
+    try {
+      const response = await fetch("http://localhost:11434/api/tags");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      setModels(data.models);
+      return data.models;
+    } catch (error) {
+      console.error("Failed to fetch models:", error);
+      return [];
+    }
+  }
+
+  useEffect(() => {
+    fetchInstalledModels();
+  }, []);
+
   const [prompt, setPrompt] = useState("");
   const [userPromptPlaceholder, setUserPromptPlaceholder] = useState(null);
   const [responseStream, setResponseStream] = useState("");
@@ -31,7 +52,6 @@ export const ChatProvider = ({ children }) => {
   );
 
   const messagesEndRef = useRef(null);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -168,6 +188,7 @@ export const ChatProvider = ({ children }) => {
   return (
     <ChatContext.Provider
       value={{
+        models,
         prompt,
         setPrompt,
         userPromptPlaceholder,
