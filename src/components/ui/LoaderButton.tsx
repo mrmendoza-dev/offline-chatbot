@@ -1,6 +1,5 @@
-import React from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "@assets/icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 
 const LoaderButton = ({
@@ -11,7 +10,6 @@ const LoaderButton = ({
   className = "",
   ...props
 }) => {
-
   return (
     <button
       onClick={onClick}
@@ -22,7 +20,7 @@ const LoaderButton = ({
       {isLoading ? (
         <div className="flex gap-2 items-center">
           <FontAwesomeIcon
-            className="text-blue-500 size-5"
+            className="text-primary-500 size-5"
             icon={icons.faCircleNotch}
             spin
           />

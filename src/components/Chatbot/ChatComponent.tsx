@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import useLocalStorage from "@hooks/useLocalStorage";
-import LoaderButton from "@components/ui/LoaderButton";
-import { marked, use } from "marked";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { icons } from "@assets/icons";
+import LoaderButton from "@components/ui/LoaderButton";
 import ToastError from "@components/ui/ToastError";
 import { useChatContext } from "@contexts/ChatContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { marked } from "marked";
+import { useEffect } from "react";
 
 const ChatComponent = () => {
   const {
@@ -49,7 +48,7 @@ const ChatComponent = () => {
             key={index}
             className={`inline-flex flex-col max-w-4xl leading-1.5 py-4 px-6 border-gray-200 bg-gray-100 rounded-xl dark:bg-gray-800 text-base font-normal text-gray-900 dark:text-white ${
               entry.role === "user"
-                ? "self-end bg-blue-100 dark:bg-blue-950"
+                ? "self-end bg-primary-100 dark:bg-primary-950"
                 : "self-start"
             }`}
           >
@@ -65,7 +64,7 @@ const ChatComponent = () => {
         {responseStreamLoading && (
           <>
             <div
-              className={`inline-flex flex-col max-w-4xl leading-1.5 py-4 px-6 border-gray-200 bg-gray-100 rounded-xl dark:bg-gray-800 text-base font-normal text-gray-900 dark:text-white ${"self-end bg-blue-100 dark:bg-blue-950"}`}
+              className={`inline-flex flex-col max-w-4xl leading-1.5 py-4 px-6 border-gray-200 bg-gray-100 rounded-xl dark:bg-gray-800 text-base font-normal text-gray-900 dark:text-white ${"self-end bg-primary-100 dark:bg-primary-950"}`}
             >
               <p>{userPromptPlaceholder}</p>
             </div>
@@ -82,7 +81,7 @@ const ChatComponent = () => {
 
       <div
         className="
-            relative max-w-5xl mx-auto w-full p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 text-left"
+            relative max-w-4xl mx-auto w-full p-2 bg-white border-none rounded-3xl shadow bg-gray-50 dark:bg-gray-800 text-left"
       >
         {errorMessage && (
           <ToastError
@@ -92,15 +91,16 @@ const ChatComponent = () => {
           />
         )}
 
-        <div>
+        {uploadedFiles.length > 0 && (
           <div className="mb-2 flex gap-2 overflow-x-auto w-full">
             {uploadedFiles.map((file, index) => (
               <div
                 key={index}
-                className="overflow-hidden flex gap-2 max-w-sm w-min py-2 px-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700"
+                className="overflow-hidden flex gap-2 max-w-sm w-min py-2 px-3 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-900 dark:border-gray-700 cursor-pointer"
                 onClick={() => removeFile(index)}
+                title="Remove file"
               >
-                <div className="flex items-center justify-center min-w-10 h-10 rounded-lg bg-blue-500 dark:bg-blue-700">
+                <div className="flex items-center justify-center min-w-10 h-10 rounded-lg bg-primary-500 dark:bg-primary-700">
                   <FontAwesomeIcon icon={icons.faFile} className="size-5" />
                 </div>
                 <div className="overflow-hidden">
@@ -114,19 +114,9 @@ const ChatComponent = () => {
               </div>
             ))}
           </div>
-        </div>
+        )}
         <div className="flex items-start">
-          <button
-            type="button"
-            onClick={() => {
-              navigator.mediaDevices.getUserMedia({ audio: true });
-            }}
-            className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-blue-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-          >
-            <FontAwesomeIcon icon={icons.faMicrophone} className="size-5" />
-          </button>
-
-          <label className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-blue-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 cursor-pointer">
+          <label className="text-gray-900 hover:text-primary-700 focus:ring-4 focus:outline-none font-medium text-sm text-center inline-flex items-center dark:text-gray-400 dark:hover:text-white cursor-pointer p-2.5">
             <input
               type="file"
               multiple
@@ -142,15 +132,15 @@ const ChatComponent = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             className="
-            resize-none bg-gray-50 border border-gray-300 text-gray-900 text-base rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            resize-none bg-gray-50 text-gray-900 text-base block w-full p-2.5 dark:bg-gray-800 dark:placeholder-gray-400 dark:text-white border-none focus:outline-none focus:ring-0 focus:border-0 max-h-32"
           />
           <LoaderButton
             onClick={handleAskPrompt}
-            className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-blue-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+            className="text-gray-900 hover:text-primary-700 focus:ring-4 focus:outline-none font-medium text-sm text-center inline-flex items-center dark:text-gray-400 dark:hover:text-white cursor-pointer p-2.5"
             isLoading={responseStreamLoading}
             loadingText=""
           >
-            <FontAwesomeIcon icon={icons.faCircleArrowUp} className="size-5" />
+            <FontAwesomeIcon icon={icons.faCircleArrowUp} className="size-6" />
           </LoaderButton>
         </div>
       </div>
@@ -159,3 +149,15 @@ const ChatComponent = () => {
 };
 
 export default ChatComponent;
+
+{
+  /* <button
+            type="button"
+            onClick={() => {
+              navigator.mediaDevices.getUserMedia({ audio: true });
+            }}
+            className="text-gray-900 bg-white hover:bg-gray-100 border border-gray-200 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
+          >
+            <FontAwesomeIcon icon={icons.faMicrophone} className="size-5" />
+          </button> */
+}

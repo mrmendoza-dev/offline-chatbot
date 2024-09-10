@@ -8,22 +8,6 @@ delete colors.trueGray;
 delete colors.coolGray;
 delete colors.blueGray;
 
-const customColors = {
-  tahiti: {
-    light: "#67e8f9",
-    DEFAULT: "#06b6d4",
-    dark: "#0e7490",
-    100: "#cffafe",
-    200: "#a5f3fc",
-    300: "#67e8f9",
-    400: "#22d3ee",
-    500: "#06b6d4",
-    600: "#0891b2",
-    700: "#0e7490",
-    800: "#155e75",
-    900: "#164e63",
-  },
-};
 const {
   default: flattenColorPalette,
 } = require("tailwindcss/lib/util/flattenColorPalette");
@@ -38,21 +22,17 @@ module.exports = {
   ],
   theme: {
     colors: {
-      primary: "#5c6ac4",
-      secondary: "#ecc94b",
       transparent: "transparent",
       current: "currentColor",
       white: "#ffffff",
-      ...customColors,
     },
 
     extend: {
       
       colors: {
         ...colors,
-        // gray: colors.neutral,
-        gray: colors.slate,
-        // gray: customColors.tahiti,
+        gray: colors.neutral,
+        primary: colors.gray,
         
       },
       animation: {
