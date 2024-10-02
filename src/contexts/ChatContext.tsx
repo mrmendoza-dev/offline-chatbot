@@ -6,52 +6,36 @@ import React, {
   useRef,
 } from "react";
 import useLocalStorage from "@hooks/useLocalStorage";
+import { useToast } from "@contexts/ToastContext";
+import { useFileUpload } from "./FileUploadContext";
 
 const ChatContext = createContext(null);
 
-export const ChatProvider = ({ children }) => {
+export const ChatProvider = ({ children }: any) => {
+  const LOCALHOST_PORT = 3000;
+  const { setToastMessage } = useToast();
+  const { uploadedFiles, setUploadedFiles }: any = useFileUpload();
+
   const [models, setModels] = useState([]);
-
-  // Fetches the installed models from the Ollama API, port 11434 is the default port for Ollama
-  async function fetchInstalledModels() {
-    try {
-      const response = await fetch("http://localhost:11434/api/tags");
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      setModels(data.models);
-      return data.models;
-    } catch (error) {
-      console.error("Failed to fetch models:", error);
-      return [];
-    }
-  }
-
-  useEffect(() => {
-    fetchInstalledModels();
-  }, []);
-
-  const [prompt, setPrompt] = useState("");
-  const [userPromptPlaceholder, setUserPromptPlaceholder] = useState(null);
-  const [responseStream, setResponseStream] = useState("");
   const [currentModel, setCurrentModel] = useLocalStorage(
     "currentOfflineModel",
     models[0]
   );
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [prompt, setPrompt] = useState("");
+  const [userPromptPlaceholder, setUserPromptPlaceholder] = useState(null);
+  const [responseStream, setResponseStream] = useState("");
+
+  const [responseStreamLoading, setResponseStreamLoading] = useState(false);
 
   const [systemMessage, setSystemMessage] = useLocalStorage(
     "systemMessage",
     "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc."
   );
-  const [responseStreamLoading, setResponseStreamLoading] = useState(false);
   const [conversationHistory, setConversationHistory] = useLocalStorage(
     "conversationHistory",
     []
   );
-
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<any>(null);
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -59,7 +43,7 @@ export const ChatProvider = ({ children }) => {
   const generateFileString = () => {
     if (uploadedFiles.length > 0) {
       return uploadedFiles
-        .map((file) => {
+        .map((file: any) => {
           return `File Name: ${file.name}\nFile Type: ${file.type}\nContent:\n${file.content}\n\n`;
         })
         .join("--------------------------------------------------\n");
@@ -67,33 +51,30 @@ export const ChatProvider = ({ children }) => {
     return "";
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [conversationHistory, responseStream, userPromptPlaceholder]);
-
-  const handleAskPrompt = async (event) => {
+  const handleAskPrompt = async (event: any) => {
     event.preventDefault();
-    if (!prompt) return;
+    if (!prompt) {
+      setToastMessage("Please enter a prompt.");
+      return;
+    }
+    if (!currentModel) {
+      setToastMessage("Please select a model.");
+      return;
+    }
 
-    let userPrompt = "";
-
-    userPrompt = prompt;
-
+    let userPrompt: any = prompt;
     if (uploadedFiles.length > 0) {
       const fileString = generateFileString();
       userPrompt = `${prompt}\n\nUploaded files: ${fileString}`;
-    } else {
-      userPrompt = prompt;
     }
 
     setPrompt("");
     setUserPromptPlaceholder(userPrompt);
-
     setResponseStream("");
     setResponseStreamLoading(true);
 
     try {
-      const res = await fetch("http://localhost:3000/ask", {
+      const res: any = await fetch(`http://localhost:${LOCALHOST_PORT}/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -105,6 +86,15 @@ export const ChatProvider = ({ children }) => {
           systemMessage,
         }),
       });
+
+      console.log("Response:", res);
+
+      if (res && res.status == 404) {
+        setToastMessage(
+          `Error asking question. Make sure server is running at http://localhost:${LOCALHOST_PORT}`
+        );
+        return;
+      }
 
       const reader = res.body.getReader();
       const decoder = new TextDecoder("utf-8");
@@ -118,14 +108,14 @@ export const ChatProvider = ({ children }) => {
         setResponseStream((prev) => prev + chunk);
       }
 
-      setConversationHistory((prevHistory) => [
+      setConversationHistory((prevHistory: any) => [
         ...prevHistory,
         { role: "user", content: userPrompt },
         { role: "assistant", content: botresponseStream },
       ]);
     } catch (error) {
       console.error("Error asking question:", error);
-      setErrorMessage("An error occurred. Please try again.");
+      setToastMessage("Error asking question.");
     } finally {
       setResponseStreamLoading(false);
       setUserPromptPlaceholder(null);
@@ -133,49 +123,12 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
-  const handleKeyDown = (event) => {
+  const handleKeyDown = (event: any) => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleAskPrompt(event);
     }
   };
-
-  const handleFileUpload = async (event) => {
-    const files = Array.from(event.target.files);
-    const acceptedFileTypes = ["application/json", "text/plain", "text/csv"];
-
-    const newFiles = await Promise.all(
-      files
-        .filter((file) => acceptedFileTypes.includes(file.type))
-        .map(async (file) => {
-          const content = await readFileContent(file);
-          return {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            lastModified: file.lastModified,
-            url: URL.createObjectURL(file),
-            content: content,
-          };
-        })
-    );
-    setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
-  };
-
-  const readFileContent = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsText(file);
-    });
-  };
-
-  const removeFile = (index) => {
-    setUploadedFiles((prevFiles) => prevFiles.filter((file, i) => i !== index));
-  };
-
-  const [uploadedFiles, setUploadedFiles] = useState([]);
 
   const resetChat = () => {
     setConversationHistory([]);
@@ -185,6 +138,38 @@ export const ChatProvider = ({ children }) => {
     setResponseStreamLoading(false);
   };
 
+  useEffect(() => {
+    // Fetches the installed models from the Ollama API, port 11434 is the default port for Ollama
+    async function fetchModels() {
+      try {
+        const response = await fetch("http://localhost:11434/api/tags");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setModels(data.models);
+        return data.models;
+      } catch (error) {
+        console.error("Failed to fetch models:", error);
+        setToastMessage(
+          "Failed to fetch models. Make sure your models are stored in default directory."
+        );
+        return [];
+      }
+    }
+
+    fetchModels();
+  }, []);
+
+  useEffect(() => {
+    if (models.length > 0 && !currentModel) {
+      setCurrentModel(models[0]);
+    }
+  }, [models]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [conversationHistory, responseStream, userPromptPlaceholder]);
   return (
     <ChatContext.Provider
       value={{
@@ -195,8 +180,6 @@ export const ChatProvider = ({ children }) => {
         responseStream,
         currentModel,
         setCurrentModel,
-        errorMessage,
-        setErrorMessage,
         systemMessage,
         setSystemMessage,
         responseStreamLoading,
@@ -205,10 +188,6 @@ export const ChatProvider = ({ children }) => {
         handleAskPrompt,
         handleKeyDown,
         messagesEndRef,
-        handleFileUpload,
-        removeFile,
-        uploadedFiles,
-        setUploadedFiles,
         resetChat,
       }}
     >

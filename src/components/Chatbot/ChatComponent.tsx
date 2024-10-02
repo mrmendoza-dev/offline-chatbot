@@ -1,10 +1,11 @@
 import { icons } from "@assets/icons";
 import LoaderButton from "@components/ui/LoaderButton";
-import ToastError from "@components/ui/ToastError";
 import { useChatContext } from "@contexts/ChatContext";
+import { useFileUpload } from "@contexts/FileUploadContext";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { marked } from "marked";
 import { useEffect } from "react";
+
 
 const ChatComponent = () => {
   const {
@@ -17,21 +18,21 @@ const ChatComponent = () => {
     handleAskPrompt,
     handleKeyDown,
     setConversationHistory,
-
-    errorMessage,
-    setErrorMessage,
-
     userPromptPlaceholder,
     responseStream,
     responseStreamLoading,
     conversationHistory,
     messagesEndRef,
 
+  }: any = useChatContext();
+
+  const {
+    uploadedFiles,
+    setUploadedFiles,
     handleFileUpload,
     removeFile,
-    uploadedFiles,
-  } = useChatContext();
-
+    fileInputRef,
+  }: any = useFileUpload();
 
 
 
@@ -57,7 +58,7 @@ const ChatComponent = () => {
             }`}
           >
             <div
-              className={`break-words text-left`}
+              className={`markdown break-words text-left`}
               dangerouslySetInnerHTML={{
                 __html: marked(entry.content),
               }}
@@ -87,14 +88,6 @@ const ChatComponent = () => {
         className="
             relative max-w-4xl mx-auto w-full p-2 bg-white border-none rounded-3xl shadow bg-gray-50 dark:bg-gray-800 text-left"
       >
-        {errorMessage && (
-          <ToastError
-            message={errorMessage}
-            onClose={() => setErrorMessage("")}
-            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2"
-          />
-        )}
-
         {uploadedFiles.length > 0 && (
           <div className="mb-2 flex gap-2 overflow-x-auto w-full">
             {uploadedFiles.map((file, index) => (
@@ -126,6 +119,7 @@ const ChatComponent = () => {
               multiple
               onChange={handleFileUpload}
               className="hidden"
+              ref={fileInputRef}
             />
             <FontAwesomeIcon icon={icons.faPaperclip} className="size-5" />
           </label>

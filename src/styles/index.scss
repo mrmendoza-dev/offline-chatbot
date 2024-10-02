@@ -107,3 +107,27 @@ select {
     color: #fff;
   }
 }
+
+.markdown {
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-weight: bold;
+  }
+  h1 {
+    font-size: 2em;
+  }
+  h2 {
+    font-size: 1.5;
+  }
+  h3 {
+    font-size: 1.25em;
+  }
+  h4 {
+    font-size: 1em;
+  }
+  p {
+    margin-top: 0.5em;
+    @apply whitespace-pre-wrap break-words; 
+  }
+}
