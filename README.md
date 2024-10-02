@@ -9,9 +9,11 @@ Simple chat interface built in React and Vite to interact with AI models offline
 - [Ollama](https://ollama.com/)
 - [llama3.1 Model](https://ollama.com/library/llama3.1)
 - [mistral Model](https://ollama.com/library/mistral)
+- [llava Model](https://ollama.com/library/llava) - Open source vision model 
 - [Ollama JavaScript Library](https://www.npmjs.com/package/ollama)
 
 ## TODO
 - Switch between different chats
 - Render Markdown cleanly
 - Clean up uploaded file displaying plaintext during chat
+- Add image uploads for vision models
