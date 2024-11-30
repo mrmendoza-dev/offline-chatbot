@@ -8,13 +8,17 @@
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "build:css": "postcss src/styles/tailwind.css -o src/styles/output.css"
+    "build:css": "postcss src/styles/tailwind.css -o src/styles/output.css",
+    "server": "nodemon server/index.js",
+    "start": "concurrently \"npm run dev\" \"npm run server\""
   },
   "dependencies": {
     "autoprefixer": "^10.4.19",
     "axios": "^1.4.0",
     "classnames": "^2.5.1",
+    "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "firebase": "^10.12.5",
     "flowbite": "^2.3.0",
@@ -23,7 +27,6 @@
     "nanoid": "^4.0.2",
     "ollama": "^0.5.6",
     "postcss": "^8.4.38",
-    "postcss-cli": "^11.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.11.2",
@@ -42,9 +45,12 @@
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
     "@vitejs/plugin-react-swc": "^3.7.0",
+    "concurrently": "^9.1.0",
     "eslint": "^8.38.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.3.4",
+    "nodemon": "^3.1.7",
+    "postcss-cli": "^11.0.0",
     "typescript": "^5.0.2",
     "vite": "^4.5.3"
   }

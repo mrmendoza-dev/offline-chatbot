@@ -1,16 +1,10 @@
+
 import express from "express";
-import cors from "cors";
 import ollama from "ollama";
 
-const app = express();
-const port = 3000;
+const router = express.Router();
 
-app.use(cors());
-app.use(express.json());
-
-console.log("Starting server...");
-
-app.post("/ask", async (req, res) => {
+router.post("/ask", async (req, res) => {
   const { conversationHistory, prompt, model, systemMessage } = req.body;
   if (!prompt) {
     return res
@@ -27,14 +21,13 @@ app.post("/ask", async (req, res) => {
       content: systemMessage,
     };
 
-    const messages = conversationHistory ? [system, ...conversationHistory] : [system];
+    const messages = conversationHistory
+      ? [system, ...conversationHistory]
+      : [system];
 
     const response = await ollama.chat({
       model: model,
-      messages: [
-        ...messages,
-        { role: "user", content: prompt },
-      ],
+      messages: [...messages, { role: "user", content: prompt }],
       stream: true,
     });
 
@@ -49,7 +42,4 @@ app.post("/ask", async (req, res) => {
   }
 });
 
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+export default router;

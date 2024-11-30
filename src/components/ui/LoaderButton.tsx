@@ -1,6 +1,6 @@
 import { icons } from "@assets/icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classNames from "classnames";
+import clsx from "clsx";
 
 const LoaderButton = ({
   isLoading,
@@ -13,7 +13,7 @@ const LoaderButton = ({
   return (
     <button
       onClick={onClick}
-      className={classNames(className)}
+      className={clsx(className)}
       disabled={isLoading}
       {...props}
     >

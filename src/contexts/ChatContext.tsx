@@ -9,10 +9,13 @@ import useLocalStorage from "@hooks/useLocalStorage";
 import { useToast } from "@contexts/ToastContext";
 import { useFileUpload } from "./FileUploadContext";
 
+
+const PORT = import.meta.env.VITE_PORT;
+
+
 const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }: any) => {
-  const LOCALHOST_PORT = 3000;
   const { setToastMessage } = useToast();
   const { uploadedFiles, setUploadedFiles }: any = useFileUpload();
 
@@ -74,7 +77,7 @@ export const ChatProvider = ({ children }: any) => {
     setResponseStreamLoading(true);
 
     try {
-      const res: any = await fetch(`http://localhost:${LOCALHOST_PORT}/ask`, {
+      const res: any = await fetch(`http://localhost:${PORT}/ask`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -91,7 +94,7 @@ export const ChatProvider = ({ children }: any) => {
 
       if (res && res.status == 404) {
         setToastMessage(
-          `Error asking question. Make sure server is running at http://localhost:${LOCALHOST_PORT}`
+          `Error asking question. Make sure server is running at http://localhost:${PORT}`
         );
         return;
       }
