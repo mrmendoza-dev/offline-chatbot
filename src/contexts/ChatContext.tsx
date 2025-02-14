@@ -5,18 +5,15 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import useLocalStorage from "@hooks/useLocalStorage";
-import { useToast } from "@contexts/ToastContext";
-import { useFileUpload } from "./FileUploadContext";
-
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { useFileUpload } from "@/contexts/FileUploadContext";
+import { toast } from "@/hooks/use-toast";
 
 const PORT = import.meta.env.VITE_PORT;
-
 
 const ChatContext = createContext(null);
 
 export const ChatProvider = ({ children }: any) => {
-  const { setToastMessage } = useToast();
   const { uploadedFiles, setUploadedFiles }: any = useFileUpload();
 
   const [models, setModels] = useState([]);
@@ -57,11 +54,15 @@ export const ChatProvider = ({ children }: any) => {
   const handleAskPrompt = async (event: any) => {
     event.preventDefault();
     if (!prompt) {
-      setToastMessage("Please enter a prompt.");
+      toast({
+        description: "Please enter a prompt.",
+      });
       return;
     }
     if (!currentModel) {
-      setToastMessage("Please select a model.");
+      toast({
+        description: "Please select a model.",
+      });
       return;
     }
 
@@ -93,9 +94,9 @@ export const ChatProvider = ({ children }: any) => {
       console.log("Response:", res);
 
       if (res && res.status == 404) {
-        setToastMessage(
-          `Error asking question. Make sure server is running at http://localhost:${PORT}`
-        );
+        toast({
+          description: `Error fetching response. Make sure server is running at http://localhost:${PORT}`,
+        });
         return;
       }
 
@@ -117,8 +118,10 @@ export const ChatProvider = ({ children }: any) => {
         { role: "assistant", content: botresponseStream },
       ]);
     } catch (error) {
-      console.error("Error asking question:", error);
-      setToastMessage("Error asking question.");
+      console.error("Error fetching response:", error);
+      toast({
+        description: "Error fetching response.",
+      });
     } finally {
       setResponseStreamLoading(false);
       setUserPromptPlaceholder(null);
@@ -142,7 +145,6 @@ export const ChatProvider = ({ children }: any) => {
   };
 
   useEffect(() => {
-    // Fetches the installed models from the Ollama API, port 11434 is the default port for Ollama
     async function fetchModels() {
       try {
         const response = await fetch("http://localhost:11434/api/tags");
@@ -154,9 +156,10 @@ export const ChatProvider = ({ children }: any) => {
         return data.models;
       } catch (error) {
         console.error("Failed to fetch models:", error);
-        setToastMessage(
-          "Failed to fetch models. Make sure your models are stored in default directory."
-        );
+        toast({
+          description:
+            "Failed to fetch models. Make sure your models are stored in default directory.",
+        });
         return [];
       }
     }

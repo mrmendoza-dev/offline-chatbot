@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 
 
-
 function FileUpload({ acceptedFileTypes, maxFileSizeMB, onFileUpload }: any) {
   const [fileError, setFileError] = useState<string | null>(null);
 
