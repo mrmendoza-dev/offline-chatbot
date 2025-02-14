@@ -1,42 +1,84 @@
-import { ArrowUp, File, MessageSquare, Paperclip, Search, X } from "lucide-react";
+import {
+  ArrowUp,
+  File,
+  Paperclip,
+  X,
+  Image,
+  Send,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
 import { cn } from "@/lib/utils";
+import { useChatContext } from "@/contexts/ChatContext";
+import { useFileUpload } from "@/contexts/FileUploadContext";
+import { checkFileType } from "@/utils/fileUtility";
 
-export const ChatInput = ({
-  uploadedFiles,
-  removeFile,
-  handleFileUpload,
-  fileInputRef,
-  prompt,
-  setPrompt,
-  handleKeyDown,
-  handleAskPrompt,
-  responseStreamLoading,
-}: any) => {
+export const ChatInput = () => {
+  const {
+    prompt,
+    setPrompt,
+    handleAskPrompt,
+    handleKeyDown,
+    responseStreamLoading,
+  }: any = useChatContext();
+
+  const { uploadedFiles, handleFileUpload, removeFile, fileInputRef }: any =
+    useFileUpload();
+
+
+  const FilePreview = ({ file, index }: { file: any; index: number }) => {
+    const fileType = checkFileType(file);
+
+    return (
+      <HoverCard openDelay={0} closeDelay={0}>
+        <HoverCardTrigger asChild>
+          <div className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer">
+            {fileType === "image" ? (
+              <Image className="h-4 w-4" />
+            ) : (
+              <File className="h-4 w-4" />
+            )}
+            <span className="max-w-[150px] truncate">{file.name}</span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-4 w-4 p-0"
+              onClick={() => removeFile(index)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </HoverCardTrigger>
+        {fileType === "image" && (
+          <HoverCardContent className="w-80">
+            <div className="space-y-2">
+              <img
+                src={file.url}
+                alt={file.name}
+                className="rounded-lg w-full h-auto object-cover"
+              />
+              <p className="text-sm text-muted-foreground">{file.name}</p>
+            </div>
+          </HoverCardContent>
+        )}
+      </HoverCard>
+    );
+  };
+
   return (
     <div className="rounded-lg border bg-card text-card-foreground shadow">
       {uploadedFiles.length > 0 && (
-          <div className="px-4 pt-4 flex gap-2 overflow-x-auto">
-            {uploadedFiles.map((file: any, index: number) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm"
-              >
-                <File className="h-4 w-4" />
-                <span className="max-w-[150px] truncate">{file.name}</span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 p-0"
-                  onClick={() => removeFile(index)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </div>
-            ))}
+        <div className="px-4 pt-4 flex gap-2 overflow-x-auto">
+          {uploadedFiles.map((file: any, index: number) => (
+            <FilePreview key={index} file={file} index={index} />
+          ))}
         </div>
       )}
 
@@ -83,7 +125,7 @@ export const ChatInput = ({
             onClick={handleAskPrompt}
             disabled={responseStreamLoading}
           >
-            <ArrowUp className="h-5 w-5" />
+            <Send className="h-5 w-5" />
           </Button>
         </div>
       </Label>

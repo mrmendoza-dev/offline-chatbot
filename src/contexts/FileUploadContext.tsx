@@ -1,12 +1,20 @@
 import React, { createContext, useContext, useState, useRef } from "react";
 
-const FileUploadContext = createContext(null);
+interface FileUploadContextType {
+  uploadedFiles: any[];
+  setUploadedFiles: React.Dispatch<React.SetStateAction<any[]>>;
+  handleFileUpload: (event: any) => Promise<void>;
+  removeFile: (index: any) => void;
+  fileInputRef: React.MutableRefObject<any>;
+}
 
-export const FileUploadProvider = ({ children }) => {
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const fileInputRef = useRef(null);
+const FileUploadContext = createContext<FileUploadContextType | null>(null);
 
-  const handleFileUpload = async (event) => {
+export const FileUploadProvider = ({ children }: any) => {
+  const [uploadedFiles, setUploadedFiles] = useState<any>([]);
+  const fileInputRef = useRef<any>(null);
+
+  const handleFileUpload = async (event: any) => {
     const files = Array.from(event.target.files);
     const acceptedFileTypes = [
       "application/json",
@@ -17,10 +25,11 @@ export const FileUploadProvider = ({ children }) => {
       "image/gif",
       "image/webp",
     ];
+
     const newFiles = await Promise.all(
       files
-        .filter((file) => acceptedFileTypes.includes(file.type))
-        .map(async (file) => {
+        .filter((file: any) => acceptedFileTypes.includes(file.type))
+        .map(async (file: any) => {
           const content = await readFileContent(file);
           return {
             name: file.name,
@@ -32,14 +41,14 @@ export const FileUploadProvider = ({ children }) => {
           };
         })
     );
-    setUploadedFiles((prevFiles) => [...prevFiles, ...newFiles]);
+    setUploadedFiles((prevFiles: any) => [...prevFiles, ...newFiles]);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const readFileContent = (file) => {
+  const readFileContent = (file: any) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
@@ -48,8 +57,10 @@ export const FileUploadProvider = ({ children }) => {
     });
   };
 
-  const removeFile = (index) => {
-    setUploadedFiles((prevFiles) => prevFiles.filter((file, i) => i !== index));
+  const removeFile = (index: any) => {
+    setUploadedFiles((prevFiles: any) =>
+      prevFiles.filter((file: any, i: any) => i !== index)
+    );
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }

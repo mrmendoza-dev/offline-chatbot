@@ -1,17 +1,37 @@
+import { useFileUpload } from "@/contexts/FileUploadContext";
+import { toast } from "@/hooks/use-toast";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { checkFileType, convertImagesToBase64 } from "@/utils/fileUtility";
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
   useRef,
+  useState,
 } from "react";
-import useLocalStorage from "@/hooks/useLocalStorage";
-import { useFileUpload } from "@/contexts/FileUploadContext";
-import { toast } from "@/hooks/use-toast";
 
 const PORT = import.meta.env.VITE_PORT;
 
-const ChatContext = createContext(null);
+interface ChatContextType {
+  models: any[];
+  prompt: string;
+  setPrompt: React.Dispatch<React.SetStateAction<string>>;
+  userPromptPlaceholder: string | null;
+  responseStream: string;
+  currentModel: any;
+  setCurrentModel: any;
+  systemMessage: string;
+  setSystemMessage: (message: string) => void;
+  responseStreamLoading: boolean;
+  conversationHistory: any[];
+  setConversationHistory: React.Dispatch<React.SetStateAction<any[]>>;
+  handleAskPrompt: (event: any) => void;
+  handleKeyDown: (event: any) => void;
+  messagesEndRef: React.RefObject<any>;
+  resetChat: () => void;
+}
+
+const ChatContext = createContext<ChatContextType | null>(null);
 
 export const ChatProvider = ({ children }: any) => {
   const { uploadedFiles, setUploadedFiles }: any = useFileUpload();
@@ -24,7 +44,6 @@ export const ChatProvider = ({ children }: any) => {
   const [prompt, setPrompt] = useState("");
   const [userPromptPlaceholder, setUserPromptPlaceholder] = useState(null);
   const [responseStream, setResponseStream] = useState("");
-
   const [responseStreamLoading, setResponseStreamLoading] = useState(false);
 
   const [systemMessage, setSystemMessage] = useLocalStorage(
@@ -40,9 +59,9 @@ export const ChatProvider = ({ children }: any) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const generateFileString = () => {
-    if (uploadedFiles.length > 0) {
-      return uploadedFiles
+  const generateDocumentString = (documents: any[]) => {
+    if (documents.length > 0) {
+      return documents
         .map((file: any) => {
           return `File Name: ${file.name}\nFile Type: ${file.type}\nContent:\n${file.content}\n\n`;
         })
@@ -53,12 +72,14 @@ export const ChatProvider = ({ children }: any) => {
 
   const handleAskPrompt = async (event: any) => {
     event.preventDefault();
-    if (!prompt) {
+
+    if (!prompt && uploadedFiles.length == 0) {
       toast({
         description: "Please enter a prompt.",
       });
       return;
     }
+
     if (!currentModel) {
       toast({
         description: "Please select a model.",
@@ -66,18 +87,56 @@ export const ChatProvider = ({ children }: any) => {
       return;
     }
 
-    let userPrompt: any = prompt;
-    if (uploadedFiles.length > 0) {
-      const fileString = generateFileString();
-      userPrompt = `${prompt}\n\nUploaded files: ${fileString}`;
-    }
+    const uploadedImages = uploadedFiles.filter(
+      (file: any) => checkFileType(file) == "image"
+    );
+    const uploadedDocuments = uploadedFiles.filter(
+      (file: any) => checkFileType(file) == "document"
+    );
 
+    const filesList = uploadedFiles.map((file: any) => file.name).join(", ");
+
+    const getDocumentText = (count: number) => {
+      if (count === 0) return "";
+      return `${count} ${count === 1 ? "Document" : "Documents"}`;
+    };
+
+    const getImageText = (count: number) => {
+      if (count === 0) return "";
+      return `${count} ${count === 1 ? "Image" : "Images"}`;
+    };
+
+    const filesSummary =
+      uploadedFiles.length > 0
+        ? `${prompt ? "\n" : ""}Uploaded Files: ${[
+            getDocumentText(uploadedDocuments.length),
+            getImageText(uploadedImages.length),
+          ]
+            .filter(Boolean)
+            .join(" ")}\n${filesList}`
+        : "";
+
+    const displayPrompt: any = (prompt || "") + filesSummary;
+
+    setUserPromptPlaceholder(displayPrompt);
     setPrompt("");
-    setUserPromptPlaceholder(userPrompt);
     setResponseStream("");
     setResponseStreamLoading(true);
-
     try {
+      const base64Images =
+        uploadedImages.length > 0
+          ? await convertImagesToBase64(uploadedImages)
+          : [];
+
+      const documentString =
+        uploadedDocuments.length > 0
+          ? generateDocumentString(uploadedDocuments)
+          : "";
+
+      const combinedPrompt = documentString
+        ? `${documentString}\n\n${prompt}`
+        : prompt;
+
       const res: any = await fetch(`http://localhost:${PORT}/ask`, {
         method: "POST",
         headers: {
@@ -85,13 +144,12 @@ export const ChatProvider = ({ children }: any) => {
         },
         body: JSON.stringify({
           conversationHistory,
-          prompt: userPrompt,
+          prompt: combinedPrompt,
           model: currentModel,
           systemMessage,
+          images: base64Images,
         }),
       });
-
-      console.log("Response:", res);
 
       if (res && res.status == 404) {
         toast({
@@ -112,9 +170,15 @@ export const ChatProvider = ({ children }: any) => {
         setResponseStream((prev) => prev + chunk);
       }
 
+      const userMessageWithImages = {
+        role: "user",
+        content: displayPrompt,
+        ...(base64Images.length && { images: base64Images }),
+      };
+
       setConversationHistory((prevHistory: any) => [
         ...prevHistory,
-        { role: "user", content: userPrompt },
+        userMessageWithImages,
         { role: "assistant", content: botresponseStream },
       ]);
     } catch (error) {
@@ -176,6 +240,7 @@ export const ChatProvider = ({ children }: any) => {
   useEffect(() => {
     scrollToBottom();
   }, [conversationHistory, responseStream, userPromptPlaceholder]);
+
   return (
     <ChatContext.Provider
       value={{

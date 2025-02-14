@@ -4,13 +4,11 @@ import ollama from "ollama";
 
 const router = express.Router();
 
+
+
 router.post("/ask", async (req, res) => {
-  const { conversationHistory, prompt, model, systemMessage } = req.body;
-  if (!prompt) {
-    return res
-      .status(400)
-      .send("Please provide a question in the request body.");
-  }
+  const { conversationHistory, prompt, model, systemMessage, images } =
+    req.body;
 
   try {
     res.setHeader("Content-Type", "text/plain");
@@ -27,7 +25,14 @@ router.post("/ask", async (req, res) => {
 
     const response = await ollama.chat({
       model: model,
-      messages: [...messages, { role: "user", content: prompt }],
+      messages: [
+        ...messages,
+        {
+          role: "user",
+          content: prompt,
+          images: images,
+        },
+      ],
       stream: true,
     });
 
