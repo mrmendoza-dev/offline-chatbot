@@ -1,12 +1,11 @@
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useChatContext } from "@/contexts/ChatContext";
-import { useFileUpload } from "@/contexts/FileUploadContext";
+import { cn } from "@/lib/utils";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { ChatInput } from "./ChatInput";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-import { ArrowUp, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 export const ChatComponent = () => {
   const {
@@ -34,32 +33,12 @@ export const ChatComponent = () => {
     messagesStartRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleDownload = () => {
-    window.open("https://ollama.com/", "_blank");
-  };
-
   return (
     <div className="relative bg-background flex flex-col h-full">
       <div className="overflow-y-auto flex-1">
         <div ref={messagesStartRef} className="max-w-5xl mx-auto p-4 space-y-4">
           {!conversationHistory.length && !responseStreamLoading && (
-            <div className="absolute left-0 right-0 top-0 bottom-0 flex items-center justify-center">
-              <div className="text-center flex flex-col gap-2">
-                <p className="text-xl font-bold break-words whitespace-pre-wrap text-foreground">
-                  Local AI: Free, Offline, and Private
-                </p>
-                <p className="max-w-[400px] text-center text-sm break-words whitespace-pre-wrap text-muted-foreground">
-                  Run Llama 3.3, DeepSeek-R1, Phi-4, Mistral, Gemma 2, and other
-                  models, locally.
-                </p>
-                <Button
-                  className="w-fit break-words text-sm mx-auto mt-2"
-                  onClick={handleDownload}
-                >
-                  Download on Ollama
-                </Button>
-              </div>
-            </div>
+            <ChatbotWelcome />
           )}
           {conversationHistory.map((entry: any, index: any) => (
             <Card
@@ -96,7 +75,7 @@ export const ChatComponent = () => {
 
                 <Card className="max-w-[80%] border-none shadow-none w-fit">
                   <CardContent className="p-4">
-                    <ReactMarkdown className="markdown prose dark:prose-invert max-w-none break-words whitespace-pre-wrap">
+                    <ReactMarkdown className="text-sm markdown prose dark:prose-invert max-w-none break-words whitespace-pre-wrap">
                       {responseStream}
                     </ReactMarkdown>
                   </CardContent>
@@ -108,7 +87,7 @@ export const ChatComponent = () => {
         </div>
       </div>
 
-      <div className="shrink-0 bg-gradient-to-t from-background via-background to-background/0">
+      <div className="z-50 shrink-0 bg-gradient-to-t from-background via-background to-background/0">
         <div className="max-w-5xl mx-auto p-4">
           <ChatInput />
         </div>
@@ -122,6 +101,77 @@ export const ChatComponent = () => {
       >
         <ArrowUp className="size-4" />
       </Button>
+    </div>
+  );
+};
+
+export const ChatbotWelcome = () => {
+  const handleDownload = () => {
+    window.open("https://ollama.com/", "_blank");
+  };
+  return (
+    <div className="absolute left-0 right-0 top-0 bottom-0 flex items-center justify-center">
+      <div className="text-center flex flex-col gap-2">
+        <p className="text-xl font-bold break-words whitespace-pre-wrap text-foreground">
+          Local AI: Free, Offline, and Private
+        </p>
+        <p className="max-w-[400px] text-center text-sm break-words whitespace-pre-wrap text-muted-foreground">
+          Run{" "}
+          <a
+            href="https://ollama.com/library/llama3.3"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            Llama 3.3
+          </a>
+          ,{" "}
+          <a
+            href="https://ollama.com/library/deepseek-r1"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            DeepSeek-R1
+          </a>
+          ,{" "}
+          <a
+            href="https://ollama.com/library/phi4"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            Phi-4
+          </a>
+          ,{" "}
+          <a
+            href="https://ollama.com/library/mistral"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            Mistral
+          </a>
+          ,{" "}
+          <a
+            href="https://ollama.com/library/gemma2"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            Gemma 2
+          </a>
+          , and other models, locally. View setup instructions here on{" "}
+          <a
+            href="https://github.com/mrmendoza-dev/offline-chatbot"
+            target="_blank"
+            className="text-foreground underline"
+          >
+            GitHub
+          </a>
+        </p>
+        <Button
+          className="w-fit break-words text-sm mx-auto mt-2"
+          onClick={handleDownload}
+        >
+          Download on Ollama
+        </Button>
+      </div>
     </div>
   );
 };

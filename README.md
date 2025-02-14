@@ -5,9 +5,12 @@ A desktop application that provides a clean interface for interacting with Ollam
 ## Features
 
 * Fully offline AI chat capabilities
+* Multiple AI model support through Ollama
+* Support for basic text files, CSVs, and JSON
+* Support for images compatible with select models
+   * LLaVa and Llama 3.2 for example
 * Clean, modern interface  
 * Dark/Light mode support
-* Multiple AI model support through Ollama
 * Real-time responses
 * Local data storage
 

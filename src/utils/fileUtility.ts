@@ -45,6 +45,7 @@ export const checkFileType = (file: File): string => {
     "text/plain",
     "text/csv",
     "application/pdf",
+    "text/markdown",
   ];
 
   if (imageTypes.includes(file.type)) {

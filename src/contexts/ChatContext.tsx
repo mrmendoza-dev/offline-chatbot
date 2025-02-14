@@ -222,7 +222,7 @@ export const ChatProvider = ({ children }: any) => {
         console.error("Failed to fetch models:", error);
         toast({
           description:
-            "Failed to fetch models. Make sure your models are stored in default directory.",
+            "Failed to fetch models. Make sure your models are stored in default directory and server is running.",
         });
         return [];
       }

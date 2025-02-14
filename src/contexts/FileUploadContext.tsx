@@ -20,10 +20,14 @@ export const FileUploadProvider = ({ children }: any) => {
       "application/json",
       "text/plain",
       "text/csv",
+      "application/pdf",
+      "text/markdown",
+
       "image/jpeg",
       "image/png",
       "image/gif",
       "image/webp",
+      "image/svg+xml",
     ];
 
     const newFiles = await Promise.all(
