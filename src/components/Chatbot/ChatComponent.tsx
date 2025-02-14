@@ -51,7 +51,7 @@ export const ChatComponent = () => {
               )}
             >
               <CardContent className="p-4">
-                <ReactMarkdown className="prose dark:prose-invert max-w-none">
+                <ReactMarkdown className="markdown prose dark:prose-invert max-w-none">
                   {entry.content}
                 </ReactMarkdown>
               </CardContent>
