@@ -91,7 +91,7 @@ export const ChatInput = () => {
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
             className={cn(
-              "min-h-[80px] resize-none border-0 focus:ring-0 focus-visible:ring-0 shadow-none",
+              "py-0 min-h-[80px] resize-none border-0 focus:ring-0 focus-visible:ring-0 shadow-none",
               "placeholder:text-muted-foreground",
               "scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-muted-foreground/20"
             )}
