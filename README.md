@@ -89,7 +89,7 @@ offline-chatbot/
 * React + Vite
 * Express.js
 * Ollama API
-* TailwindCSS
+* TailwindCSS v4
 * Node.js
 
 ## Additional Resources
