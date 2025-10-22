@@ -1,4 +1,4 @@
-import { ChatComponent } from "@/components/Chatbot/ChatComponent";
+import { ChatComponent } from "@/components/chatbot/ChatComponent";
 
 export const MainContent = () => {
   return (

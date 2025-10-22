@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useChatContext } from "@/contexts/ChatContext";
-import { ChatSystemModal } from "@/components/Chatbot/ChatSystemModal";
+import { ChatSystemModal } from "@/components/chatbot/ChatSystemModal";
 
 export const ChatHeader = ({}) => {
   const {
@@ -23,14 +23,14 @@ export const ChatHeader = ({}) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <div className="flex justify-between items-start gap-2 w-full">
+    <div className="flex justify-between items-center gap-2 w-full">
       <div className="flex items-center gap-2">
-        <Label htmlFor="model-select" className="text-foreground">
-          Model select
+        <Label htmlFor="model-select" className="text-foreground text-xs">
+          Model
         </Label>
 
         <Select value={currentModel} onValueChange={setCurrentModel}>
-          <SelectTrigger className="w-48 text-foreground">
+          <SelectTrigger className="max-w-48 text-foreground text-sm border-none shadow-none !bg-transparent">
             <SelectValue placeholder="Select a model" />
           </SelectTrigger>
           <SelectContent>
@@ -56,11 +56,12 @@ export const ChatHeader = ({}) => {
 
       <div className="flex items-center gap-2 lg:order-2">
         <Button
+        size="sm"
           variant="outline"
           onClick={resetChat}
           className="text-foreground"
         >
-          Clear Chat
+          Reset
         </Button>
       </div>
     </div>

@@ -9,6 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Settings } from "lucide-react";
 
 export const ChatSystemModal = ({
   dialogOpen,
@@ -19,8 +20,9 @@ export const ChatSystemModal = ({
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="text-foreground">
-          System Instructions
+        <Button size="sm" variant="outline" className="text-foreground">
+          <Settings className="h-4 w-4" />
+          Settings
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[80vh]">

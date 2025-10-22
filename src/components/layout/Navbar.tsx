@@ -1,9 +1,31 @@
-import { ThemeToggle } from "@/components/common/ThemeToggle";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+
 import { Link } from "react-router-dom";
-import { ChatHeader } from "@/components/Chatbot/ChatHeader";
+import { ChatHeader } from "@/components/chatbot/ChatHeader";
 import { Button } from "@/components/ui/button";
-import { Github } from "lucide-react";
+import { Github, Moon, Sun } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+
+
+export const ThemeToggle = () => {
+  const { theme, setTheme } = useTheme();
+
+  const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
+
+  return (
+    <Button
+      id="theme-toggle"
+      type="button"
+      size="icon"
+      variant="ghost"
+      className="text-foreground hover:text-foreground"
+      onClick={toggleTheme}
+    >
+      {theme === "dark" ? <Sun /> : <Moon />}
+    </Button>
+  );
+};
+
+
 
 export const Navbar = () => {
   const handleGithub = () => {
@@ -11,21 +33,21 @@ export const Navbar = () => {
   };
 
   return (
-    <nav className="flex-none h-16 border-b bg-background backdrop-blur-sm z-50">
+    <nav className="flex-none h-14 border-b bg-background backdrop-blur-sm z-50 px-2">
       <div className="flex justify-between h-full items-center px-4 gap-4">
         <div className="flex items-center gap-2">
           {/* <SidebarTrigger className="text-foreground p-4" /> */}
-          <Link to="/" className="flex items-center justify-between mr-4">
+          <Link to="/" className="flex items-center justify-between">
             {/* <img src="/images/logo.png" className="mr-3 h-8" alt="App Logo" /> */}
-            <span className="self-center text-xl font-semibold whitespace-nowrap dark:text-white text-black">
-              Offline Chatbot
+            <span className="self-center text-base font-medium whitespace-nowrap text-foreground">
+              Local AI
             </span>
           </Link>
         </div>
 
-        <ChatHeader />
-
         <div className="flex items-center gap-2">
+          <ChatHeader />
+
           <Button variant="ghost" size="icon" onClick={handleGithub}>
             <Github />
           </Button>

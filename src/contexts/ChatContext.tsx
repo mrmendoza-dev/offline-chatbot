@@ -1,5 +1,4 @@
 import { useFileUpload } from "@/contexts/FileUploadContext";
-import { toast } from "@/hooks/use-toast";
 import useLocalStorage from "@/hooks/useLocalStorage";
 import { checkFileType, convertImagesToBase64 } from "@/utils/fileUtility";
 import React, {
@@ -9,8 +8,9 @@ import React, {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 
-const PORT = import.meta.env.VITE_PORT;
+const PORT = import.meta.env.VITE_PORT || 3000;
 
 interface ChatContextType {
   models: any[];
@@ -74,16 +74,12 @@ export const ChatProvider = ({ children }: any) => {
     event.preventDefault();
 
     if (!prompt && uploadedFiles.length == 0) {
-      toast({
-        description: "Please enter a prompt.",
-      });
+      toast("Please enter a prompt.");
       return;
     }
 
     if (!currentModel) {
-      toast({
-        description: "Please select a model.",
-      });
+      toast("Please select a model.");
       return;
     }
 
@@ -152,9 +148,9 @@ export const ChatProvider = ({ children }: any) => {
       });
 
       if (res && res.status == 404) {
-        toast({
-          description: `Error fetching response. Make sure server is running at http://localhost:${PORT}`,
-        });
+        toast(
+          `Error fetching response. Make sure server is running at http://localhost:${PORT}`
+        );
         return;
       }
 
@@ -183,9 +179,7 @@ export const ChatProvider = ({ children }: any) => {
       ]);
     } catch (error) {
       console.error("Error fetching response:", error);
-      toast({
-        description: "Error fetching response.",
-      });
+      toast("Error fetching response.");
     } finally {
       setResponseStreamLoading(false);
       setUserPromptPlaceholder(null);
@@ -220,10 +214,9 @@ export const ChatProvider = ({ children }: any) => {
         return data.models;
       } catch (error) {
         console.error("Failed to fetch models:", error);
-        toast({
-          description:
-            "Failed to fetch models. Make sure your models are stored in default directory and server is running.",
-        });
+        toast(
+          "Failed to fetch models. Make sure your models are stored in default directory and server is running."
+        );
         return [];
       }
     }
