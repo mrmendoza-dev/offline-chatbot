@@ -21,9 +21,9 @@ export default defineConfig({
         "favicon/masked-icon.svg",
       ],
       manifest: {
-        name: "Vite_React_Template",
-        short_name: "Vite_React_Template",
-        description: "Vite_React_Template",
+        name: "Offline AI Chatbot",
+        short_name: "Local AI",
+        description: "Offline AI Chatbot powered by Ollama",
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone",

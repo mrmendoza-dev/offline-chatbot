@@ -1,0 +1,34 @@
+import type { ChatRequest, OllamaModel } from "../types/chat.types";
+import { endpoints, handleApiError, ollamaClient } from "../utils/api";
+
+export const fetchModels = async (): Promise<OllamaModel[]> => {
+  try {
+    const response = await ollamaClient.get(endpoints.ollama.tags);
+    return response.data.models || [];
+  } catch (error) {
+    console.error("Failed to fetch models:", error);
+    throw new Error(handleApiError(error));
+  }
+};
+
+export const sendChatMessage = async (
+  request: ChatRequest
+): Promise<ReadableStream<Uint8Array>> => {
+  const response = await fetch(`${import.meta.env.VITE_PORT || 3000}/ask`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(request),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  if (!response.body) {
+    throw new Error("Response body is null");
+  }
+
+  return response.body;
+};

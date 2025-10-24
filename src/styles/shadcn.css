@@ -1,0 +1,22 @@
+
+/* Override sonner styles, shadcn has issues with matching themes */
+li[data-sonner-toast] {
+  @apply border !border-border !bg-card;
+  svg {
+    @apply text-primary;
+  }
+
+  button[data-button] {
+    @apply !text-primary-foreground !bg-primary ml-auto;
+  }
+
+  div[data-content] {
+    div[data-title] {
+      @apply text-foreground;
+    }
+
+    div[data-description] {
+      @apply text-muted-foreground;
+    }
+  }
+}

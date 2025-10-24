@@ -1,5 +1,7 @@
 @import "tailwindcss";
-@import "./markdown.css";
+@import "./shadcn.css";
+
+@custom-variant dark (&:is(.dark *));
 
 html {
   scroll-behavior: smooth;
@@ -7,7 +9,7 @@ html {
 
 body {
   font-size: 16px;
-  font-family: "ui-sans-serif", sans-serif; 
+  font-family: "ui-sans-serif", sans-serif;
   color: #fff;
   background-color: #000;
   justify-content: center;
@@ -83,7 +85,7 @@ ul {
     --popover-foreground: 0 0% 98%;
     --primary: 0 0% 98%;
     --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%; 
+    --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
     --muted: 0 0% 14.9%;
     --muted-foreground: 0 0% 63.9%;
@@ -138,16 +140,15 @@ ul {
 }
 
 ::-webkit-scrollbar {
-    @apply w-2.5 h-2.5;
-
+  @apply w-2.5 h-2.5;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-transparent
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply rounded-full bg-border border-[1px] border-transparent border-solid bg-clip-padding;
+  @apply rounded-full bg-border border-[1px] border-transparent border-solid bg-clip-padding;
 }
 
 @layer base {
