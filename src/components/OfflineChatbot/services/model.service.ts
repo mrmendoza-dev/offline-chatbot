@@ -1,5 +1,10 @@
 import type { ChatRequest, OllamaModel } from "../types/chat.types";
-import { endpoints, handleApiError, ollamaClient } from "../utils/api";
+import {
+  BASE_URL,
+  endpoints,
+  handleApiError,
+  ollamaClient,
+} from "../utils/api";
 
 export const fetchModels = async (): Promise<OllamaModel[]> => {
   try {
@@ -14,7 +19,7 @@ export const fetchModels = async (): Promise<OllamaModel[]> => {
 export const sendChatMessage = async (
   request: ChatRequest
 ): Promise<ReadableStream<Uint8Array>> => {
-  const response = await fetch(`${import.meta.env.VITE_PORT || 3000}/ask`, {
+  const response = await fetch(`${BASE_URL}/ask`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

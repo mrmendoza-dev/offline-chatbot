@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const PORT = import.meta.env.VITE_PORT || 3000;
-const BASE_URL = `http://localhost:${PORT}`;
+const PORT = import.meta.env.VITE_API_PORT || 3001;
+export const BASE_URL = `http://localhost:${PORT}`;
 const OLLAMA_BASE_URL = "http://localhost:11434/api";
 
 export const apiClient = axios.create({

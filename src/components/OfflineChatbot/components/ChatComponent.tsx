@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 import { useEffect, useRef } from "react";
 import { useChatContext } from "../contexts/ChatContext";
 import type { ChatMessage as ChatMessageType } from "../types/chat.types";
@@ -53,9 +53,9 @@ export const ChatComponent = () => {
                 variant="placeholder"
               />
 
-              <div className="flex items-start space-x-4">
-                <div className="pt-4 flex-shrink-0">
-                  <Loader2 className="size-5 animate-spin" />
+              <div className="relative mr-auto max-w-[80%]">
+                <div className="absolute -left-8 top-4">
+                  <Spinner />
                 </div>
                 <ChatMessage content={responseStream} role="assistant" />
               </div>

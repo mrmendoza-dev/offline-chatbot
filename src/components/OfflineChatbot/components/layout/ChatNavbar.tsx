@@ -3,7 +3,6 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,

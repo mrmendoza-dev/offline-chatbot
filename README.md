@@ -46,9 +46,10 @@ A modern desktop application providing a clean interface for interacting with Ol
    npm install
    ```
 
-3. Create a `.env` file in the root directory:
+3. Create a `.env` file in the root directory (optional):
    ```env
-   VITE_PORT=3030
+   VITE_PORT=3000       # Frontend Vite server port (default: 3000)
+   VITE_API_PORT=3001  # Backend API server port (default: 3001)
    ```
 
 ## Running the Application
@@ -59,10 +60,14 @@ Start both frontend and backend servers:
 npm start
 ```
 
-This will run:
+This will:
 
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:3030`
+1. Automatically clean up any processes using ports 3000 and 3001
+2. Start both servers:
+   - Frontend: `http://localhost:3000` (default)
+   - Backend: `http://localhost:3001` (default)
+
+The server will automatically find an available port if the default is in use.
 
 ## Development
 
@@ -133,9 +138,10 @@ offline-chatbot/
 
 ## Environment Variables
 
-| Variable  | Description         | Required |
-| --------- | ------------------- | -------- |
-| VITE_PORT | Backend server port | Yes      |
+| Variable      | Description               | Default | Required |
+| ------------- | ------------------------- | ------- | -------- |
+| VITE_PORT     | Frontend Vite server port | 3000    | No       |
+| VITE_API_PORT | Backend API server port   | 3001    | No       |
 
 ## Tech Stack
 

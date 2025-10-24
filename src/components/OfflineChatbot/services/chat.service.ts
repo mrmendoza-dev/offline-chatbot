@@ -17,11 +17,17 @@ export const formatFilesSummary = (
   images: Array<{ name: string }>,
   prompt: string
 ): string => {
+  const documentCount = documents.length;
+  const imageCount = images.length;
+
+  // If no files are uploaded, just return the prompt
+  if (documentCount === 0 && imageCount === 0) {
+    return prompt;
+  }
+
   const filesList = [...documents, ...images]
     .map((file) => file.name)
     .join(", ");
-  const documentCount = documents.length;
-  const imageCount = images.length;
 
   const getDocumentText = (count: number) => {
     if (count === 0) return "";
