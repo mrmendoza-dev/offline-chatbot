@@ -56,7 +56,7 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: Number(process.env.VITE_PORT) || 3000,
+    port: Number(process.env.VITE_PORT) || 8080,
     strictPort: false, // Allow fallback to next available port
     allowedHosts: ["localhost", "127.0.0.1", "0.0.0.0", ".ngrok-free.app"],
   },

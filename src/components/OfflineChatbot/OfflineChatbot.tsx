@@ -4,7 +4,9 @@ import { ChatMainContent } from "./components/layout/ChatMainContent";
 import { ChatNavbar } from "./components/layout/ChatNavbar";
 import { ChatSidebar } from "./components/layout/ChatSidebar";
 import { useApplicationContext } from "./contexts/ApplicationContext";
+import { useChatContext } from "./contexts/ChatContext";
 import { Providers } from "./contexts/Providers";
+import { useHotkeys } from "./hooks/useHotkeys";
 import "./styles/index.css";
 
 export const OfflineChatbot = () => {
@@ -17,6 +19,27 @@ export const OfflineChatbot = () => {
 
 const OfflineChatbotUI = () => {
   const { sidebarOpen, setSidebarOpen } = useApplicationContext();
+  const { focusInput, stopGeneration, responseStreamLoading } =
+    useChatContext();
+
+  useHotkeys({
+    hotkeys: [
+      {
+        key: "/",
+        ctrl: true,
+        handler: focusInput,
+      },
+      {
+        key: "Escape",
+        global: true, // Allow Esc to work even when typing in input
+        handler: () => {
+          if (responseStreamLoading) {
+            stopGeneration();
+          }
+        },
+      },
+    ],
+  });
 
   return (
     <div className="h-full w-full overflow-hidden">

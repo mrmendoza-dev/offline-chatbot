@@ -17,7 +17,8 @@ export const fetchModels = async (): Promise<OllamaModel[]> => {
 };
 
 export const sendChatMessage = async (
-  request: ChatRequest
+  request: ChatRequest,
+  signal?: AbortSignal
 ): Promise<ReadableStream<Uint8Array>> => {
   const response = await fetch(`${BASE_URL}/ask`, {
     method: "POST",
@@ -25,6 +26,7 @@ export const sendChatMessage = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify(request),
+    signal,
   });
 
   if (!response.ok) {

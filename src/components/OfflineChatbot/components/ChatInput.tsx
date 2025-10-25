@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "framer-motion";
-import { Camera, Paperclip, Send, Settings } from "lucide-react";
+import { Camera, Paperclip, Send, Settings, Square } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAttachment } from "../contexts/AttachmentContext";
@@ -27,6 +27,8 @@ export const ChatInput = () => {
     handleAskPrompt,
     handleKeyDown,
     responseStreamLoading,
+    stopGeneration,
+    setInputRef,
   } = useChatContext();
 
   const {
@@ -89,6 +91,16 @@ export const ChatInput = () => {
         </div>
       )}
 
+      {/* Hidden file input */}
+      <Input
+        id="file-upload"
+        type="file"
+        multiple
+        onChange={handleFileUpload}
+        className="hidden"
+        ref={fileInputRef}
+      />
+
       {/* Input Section */}
       <div
         className="p-3"
@@ -98,7 +110,14 @@ export const ChatInput = () => {
       >
         <div className="relative">
           <Textarea
-            ref={textareaRef}
+            ref={(ref) => {
+              if (textareaRef.current !== ref) {
+                (
+                  textareaRef as React.MutableRefObject<HTMLTextAreaElement | null>
+                ).current = ref;
+              }
+              setInputRef(ref);
+            }}
             id="prompt"
             placeholder="Ask me anything..."
             value={prompt}
@@ -114,31 +133,21 @@ export const ChatInput = () => {
           <div className="flex items-center justify-between gap-2">
             <div className="flex gap-1">
               <Tooltip>
-                <TooltipTrigger>
-                  <>
-                    <Label
-                      htmlFor="file-upload"
-                      className="inline-flex cursor-pointer items-center justify-center rounded-md h-9 w-9 hover:bg-muted transition-colors"
-                    >
-                      <Paperclip className="h-4 w-4" />
-                      <span className="sr-only">Attach file</span>
-                    </Label>
-                    <Input
-                      id="file-upload"
-                      type="file"
-                      multiple
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      ref={fileInputRef}
-                    />
-                  </>
+                <TooltipTrigger asChild>
+                  <Label
+                    htmlFor="file-upload"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-md h-9 w-9 hover:bg-muted transition-colors"
+                  >
+                    <Paperclip className="h-4 w-4" />
+                    <span className="sr-only">Attach file</span>
+                  </Label>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                   <p>Attach file</p>
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -153,7 +162,7 @@ export const ChatInput = () => {
                 </TooltipContent>
               </Tooltip>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -169,18 +178,27 @@ export const ChatInput = () => {
               </Tooltip>
             </div>
 
-            <Button
-              size="icon"
-              className={cn(
-                "h-9 w-9",
-                responseStreamLoading && "animate-pulse"
-              )}
-              onClick={handleAskPrompt}
-              disabled={isDisabled}
-            >
-              <Send className="h-4 w-4" />
-              <span className="sr-only">Send message</span>
-            </Button>
+            {responseStreamLoading ? (
+              <Button
+                size="icon"
+                className="h-9 w-9"
+                onClick={stopGeneration}
+                variant="destructive"
+              >
+                <Square className="h-4 w-4" />
+                <span className="sr-only">Stop generation</span>
+              </Button>
+            ) : (
+              <Button
+                size="icon"
+                className="h-9 w-9"
+                onClick={handleAskPrompt}
+                disabled={isDisabled}
+              >
+                <Send className="h-4 w-4" />
+                <span className="sr-only">Send message</span>
+              </Button>
+            )}
           </div>
         </div>
       </div>

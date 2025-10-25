@@ -29,6 +29,9 @@ interface ChatContextType {
   handleKeyDown: (event: React.KeyboardEvent) => void;
   messagesEndRef: React.RefObject<HTMLDivElement>;
   resetChat: () => void;
+  stopGeneration: () => void;
+  focusInput: () => void;
+  setInputRef: (ref: HTMLTextAreaElement | null) => void;
 }
 
 const ChatContext = createContext<ChatContextType | null>(null);
@@ -53,13 +56,83 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   >("conversationHistory", []);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(
+    null
+  );
+  const currentPromptRef = useRef<string>("");
+  const currentAttachmentsRef = useRef<ChatMessage["attachments"]>([]);
+
+  const setInputRef = useCallback((ref: HTMLTextAreaElement | null) => {
+    if (inputRef.current !== ref) {
+      (inputRef as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+        ref;
+    }
+  }, []);
+
+  const focusInput = useCallback(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
+  const stopGeneration = useCallback(() => {
+    // Cancel the abort controller to stop the fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Cancel the reader stream
+    if (readerRef.current) {
+      readerRef.current.cancel();
+    }
+
+    // Save the partial response to conversation history
+    const partialResponse = responseStream;
+    if (partialResponse) {
+      const base64Images = currentAttachmentsRef.current
+        ?.filter((att) => att.base64)
+        .map((att) => att.base64!);
+
+      const userMessageWithAttachments: ChatMessage = {
+        role: "user",
+        content: currentPromptRef.current,
+        ...(base64Images &&
+          base64Images.length > 0 && { images: base64Images }),
+        ...(currentAttachmentsRef.current &&
+          currentAttachmentsRef.current.length > 0 && {
+            attachments: currentAttachmentsRef.current,
+          }),
+      };
+
+      setConversationHistory((prevHistory) => [
+        ...prevHistory,
+        userMessageWithAttachments,
+        { role: "assistant", content: partialResponse },
+      ]);
+    }
+
+    // Clean up state
+    setResponseStreamLoading(false);
+    setUserPromptPlaceholder(null);
+    setUploadedFiles([]);
+    setResponseStream("");
+    abortControllerRef.current = null;
+    readerRef.current = null;
+    currentPromptRef.current = "";
+    currentAttachmentsRef.current = [];
+  }, [responseStream, setConversationHistory, setUploadedFiles]);
+
   const handleAskPrompt = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    // Prevent submission if generation is already active
+    if (responseStreamLoading) {
+      return;
+    }
 
     if (!prompt && uploadedFiles.length === 0) {
       toast("Please enter a prompt.");
@@ -81,10 +154,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         file.category === "pdf"
     );
 
+    // Create abort controller for this request
+    abortControllerRef.current = new AbortController();
+
     setUserPromptPlaceholder(prompt);
     setPrompt("");
     setResponseStream("");
     setResponseStreamLoading(true);
+
+    // Store current prompt and attachments for potential cancellation
+    currentPromptRef.current = prompt;
 
     try {
       const base64Images =
@@ -101,15 +180,31 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         ? `${documentString}\n\n${prompt}`
         : prompt;
 
-      const stream = await sendChatMessage({
-        conversationHistory,
-        prompt: combinedPrompt,
-        model: currentModel.model,
-        systemMessage,
-        images: base64Images,
-      });
+      // Create attachment metadata before streaming
+      const attachments = uploadedFiles.map((file) => ({
+        name: file.name,
+        category: file.category,
+        size: file.size,
+        type: file.type,
+        content: file.content,
+        base64: file.base64,
+        parseError: file.parseError,
+      }));
+      currentAttachmentsRef.current = attachments;
+
+      const stream = await sendChatMessage(
+        {
+          conversationHistory,
+          prompt: combinedPrompt,
+          model: currentModel.model,
+          systemMessage,
+          images: base64Images,
+        },
+        abortControllerRef.current.signal
+      );
 
       const reader = stream.getReader();
+      readerRef.current = reader;
       const decoder = new TextDecoder("utf-8");
       let botResponseStream = "";
 
@@ -122,22 +217,13 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setResponseStream((prev) => prev + chunk);
       }
 
-      // Create attachment metadata for history
-      const attachments = uploadedFiles.map((file) => ({
-        name: file.name,
-        category: file.category,
-        size: file.size,
-        type: file.type,
-        content: file.content,
-        base64: file.base64,
-        parseError: file.parseError,
-      }));
-
       const userMessageWithImages: ChatMessage = {
         role: "user",
-        content: prompt,
+        content: currentPromptRef.current,
         ...(base64Images.length > 0 && { images: base64Images }),
-        ...(attachments.length > 0 && { attachments }),
+        ...(currentAttachmentsRef.current.length > 0 && {
+          attachments: currentAttachmentsRef.current,
+        }),
       };
 
       setConversationHistory((prevHistory) => [
@@ -146,17 +232,31 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         { role: "assistant", content: botResponseStream },
       ]);
     } catch (error) {
+      // Check if error is from abort
+      if (error instanceof Error && error.name === "AbortError") {
+        // Silently handle abort - stopGeneration already saved the partial response
+        return;
+      }
       console.error("Error fetching response:", error);
       toast("Error fetching response.");
     } finally {
       setResponseStreamLoading(false);
       setUserPromptPlaceholder(null);
       setUploadedFiles([]);
+      abortControllerRef.current = null;
+      readerRef.current = null;
+      currentPromptRef.current = "";
+      currentAttachmentsRef.current = [];
     }
   };
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
+      // Prevent submission if generation is active
+      if (responseStreamLoading) {
+        event.preventDefault();
+        return;
+      }
       event.preventDefault();
       handleAskPrompt(event);
     }
@@ -195,6 +295,9 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         handleKeyDown,
         messagesEndRef,
         resetChat,
+        stopGeneration,
+        focusInput,
+        setInputRef,
       }}
     >
       {children}

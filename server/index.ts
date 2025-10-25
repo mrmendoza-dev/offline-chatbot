@@ -18,7 +18,7 @@ app.use("/", chatRoutes);
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
-  res.status(200).json({ status: "ok", message: "Server is running" });
+  return res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
 // Error handling middleware
@@ -27,7 +27,7 @@ app.use((err: Error, _req: Request, res: Response) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-const PORT = Number(process.env.VITE_API_PORT) || 3001;
+const PORT = Number(process.env.VITE_API_PORT) || 8081;
 
 findAvailablePort(PORT)
   .then((port) => {
