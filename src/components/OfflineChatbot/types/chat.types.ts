@@ -1,3 +1,5 @@
+import type { AttachmentMetadata } from "./attachment.types";
+
 export interface OllamaModel {
   name: string;
   model: string;
@@ -17,6 +19,7 @@ export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;
   images?: string[];
+  attachments?: AttachmentMetadata[];
 }
 
 export interface ConversationHistory extends Array<ChatMessage> {}

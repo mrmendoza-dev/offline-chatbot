@@ -12,12 +12,13 @@ import { AnimatePresence } from "framer-motion";
 import { Camera, Paperclip, Send, Settings } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useAttachment } from "../contexts/AttachmentContext";
 import { useChatContext } from "../contexts/ChatContext";
-import { useFileUpload } from "../contexts/FileUploadContext";
+import { processFiles } from "../utils/attachment/conversion";
 import { captureScreen } from "../utils/deviceUtility";
-import { processFiles } from "../utils/fileConversion";
 import { FilePreview } from "./FilePreview";
 import { SettingsDialog } from "./SettingsDialog";
+import { AttachmentLoadingPlaceholder } from "./attachments/AttachmentLoadingPlaceholder";
 
 export const ChatInput = () => {
   const {
@@ -34,7 +35,8 @@ export const ChatInput = () => {
     fileInputRef,
     removeFile,
     setUploadedFiles,
-  } = useFileUpload();
+    isLoading,
+  } = useAttachment();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -69,7 +71,7 @@ export const ChatInput = () => {
   return (
     <div className="rounded-lg border bg-card/50 backdrop-blur-sm text-card-foreground shadow">
       {/* File Attachments Section */}
-      {uploadedFiles.length > 0 && (
+      {(uploadedFiles.length > 0 || isLoading) && (
         <div className="border-b px-4 py-3 border-border/50">
           <div className="flex gap-2 overflow-x-auto">
             <AnimatePresence mode="popLayout">
@@ -81,6 +83,7 @@ export const ChatInput = () => {
                   onRemove={removeFile}
                 />
               ))}
+              {isLoading && <AttachmentLoadingPlaceholder />}
             </AnimatePresence>
           </div>
         </div>

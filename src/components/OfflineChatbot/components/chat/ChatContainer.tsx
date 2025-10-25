@@ -1,13 +1,12 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useEffect, useRef } from "react";
-import { useChatContext } from "../contexts/ChatContext";
-import type { ChatMessage as ChatMessageType } from "../types/chat.types";
-import { ChatInput } from "./ChatInput";
-import { ChatbotWelcome } from "./ChatbotWelcome";
-import { ScrollToTopButton } from "./ScrollToTopButton";
-import { ChatMessage } from "./chat/ChatMessage";
+import { useChatContext } from "../../contexts/ChatContext";
+import type { ChatMessage as ChatMessageType } from "../../types/chat.types";
+import { ChatInput } from "../ChatInput";
+import { ChatbotWelcome } from "../ChatbotWelcome";
+import { ChatMessage } from "./ChatMessage";
 
-export const ChatComponent = () => {
+export const ChatContainer = () => {
   const {
     userPromptPlaceholder,
     responseStream,
@@ -58,11 +57,7 @@ export const ChatComponent = () => {
                 <div className="absolute -left-8 top-4">
                   <Spinner />
                 </div>
-                {responseStream ? (
-                  <ChatMessage content={responseStream} role="assistant" />
-                ) : (
-                  <ChatMessage content="Generating..." role="assistant" />
-                )}
+                <ChatMessage content={responseStream} role="assistant" />
               </div>
             </>
           )}
@@ -75,8 +70,6 @@ export const ChatComponent = () => {
           <ChatInput />
         </div>
       </div>
-
-      <ScrollToTopButton onClick={scrollToTop} />
     </div>
   );
 };

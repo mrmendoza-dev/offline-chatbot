@@ -1,8 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { useTheme } from "@/contexts/ThemeContext";
-import { cn } from "@/lib/utils";
-import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
-import { Link } from "react-router-dom";
 import {
   Select,
   SelectContent,
@@ -10,8 +6,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useTheme } from "@/contexts/ThemeContext";
+import { cn } from "@/lib/utils";
+import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useChatContext } from "../../contexts/ChatContext";
+import { useModelContext } from "../../contexts/ModelContext";
 import type { OllamaModel } from "../../types/chat.types";
 import { SettingsDialog } from "../SettingsDialog";
 
@@ -20,7 +21,9 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
     window.open("https://github.com/mrmendoza-dev/offline-chatbot", "_blank");
   };
 
-  const { models, currentModel, setCurrentModel, resetChat } = useChatContext();
+  const { resetChat } = useChatContext();
+  const { models, currentModel, setCurrentModel, isLoading } =
+    useModelContext();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -35,11 +38,8 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             </span>
           </Link>
 
+          {/* Model selector */}
           <div className="flex items-center gap-0">
-            {/* <Label htmlFor="model-select" className="text-foreground text-xs">
-              Model
-            </Label> */}
-
             <Select
               value={currentModel?.model || ""}
               onValueChange={(value) => {
@@ -48,9 +48,14 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
                 );
                 if (selectedModel) setCurrentModel(selectedModel);
               }}
+              disabled={isLoading}
             >
               <SelectTrigger className="max-w-48 text-foreground text-sm border-none shadow-none !bg-transparent">
-                <SelectValue placeholder="Select a model" />
+                <SelectValue
+                  placeholder={
+                    isLoading ? "Loading models..." : "Select a model"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
                 {models?.map((model: OllamaModel, index: number) => (

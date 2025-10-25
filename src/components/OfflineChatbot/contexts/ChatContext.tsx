@@ -8,24 +8,18 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useLocalStorage } from "../hooks/useLocalStorage";
-import {
-  formatFilesSummary,
-  generateDocumentString,
-} from "../services/chat.service";
-import { fetchModels, sendChatMessage } from "../services/model.service";
-import type { ChatMessage, OllamaModel } from "../types/chat.types";
-import { convertImagesToBase64 } from "../utils/fileConversion";
-import { checkFileType } from "../utils/fileValidation";
-import { useFileUpload } from "./FileUploadContext";
+import { generateDocumentString } from "../services/message.service";
+import { sendChatMessage } from "../services/model.service";
+import type { ChatMessage } from "../types/chat.types";
+import { convertImagesToBase64 } from "../utils/attachment/conversion";
+import { useAttachment } from "./AttachmentContext";
+import { useModelContext } from "./ModelContext";
 
 interface ChatContextType {
-  models: OllamaModel[];
   prompt: string;
   setPrompt: React.Dispatch<React.SetStateAction<string>>;
   userPromptPlaceholder: string | null;
   responseStream: string;
-  currentModel: OllamaModel | null;
-  setCurrentModel: React.Dispatch<React.SetStateAction<OllamaModel | null>>;
   systemMessage: string;
   setSystemMessage: (message: string) => void;
   responseStreamLoading: boolean;
@@ -40,12 +34,8 @@ interface ChatContextType {
 const ChatContext = createContext<ChatContextType | null>(null);
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
-  const { uploadedFiles, setUploadedFiles } = useFileUpload();
-  const [models, setModels] = useState<OllamaModel[]>([]);
-  const [currentModel, setCurrentModel] = useLocalStorage<OllamaModel | null>(
-    "currentOfflineModel",
-    null
-  );
+  const { uploadedFiles, setUploadedFiles } = useAttachment();
+  const { currentModel } = useModelContext();
   const [prompt, setPrompt] = useState<string>("");
   const [userPromptPlaceholder, setUserPromptPlaceholder] = useState<
     string | null
@@ -82,19 +72,16 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     }
 
     const uploadedImages = uploadedFiles.filter(
-      (file) => checkFileType(file) === "image"
+      (file) => file.category === "image"
     );
-    const uploadedDocuments = uploadedFiles.filter(
-      (file) => checkFileType(file) === "document"
-    );
-
-    const displayPrompt = formatFilesSummary(
-      uploadedDocuments,
-      uploadedImages,
-      prompt
+    const uploadedTextFiles = uploadedFiles.filter(
+      (file) =>
+        file.category === "text" ||
+        file.category === "code" ||
+        file.category === "pdf"
     );
 
-    setUserPromptPlaceholder(displayPrompt);
+    setUserPromptPlaceholder(prompt);
     setPrompt("");
     setResponseStream("");
     setResponseStreamLoading(true);
@@ -106,8 +93,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
           : [];
 
       const documentString =
-        uploadedDocuments.length > 0
-          ? generateDocumentString(uploadedDocuments)
+        uploadedTextFiles.length > 0
+          ? generateDocumentString(uploadedTextFiles)
           : "";
 
       const combinedPrompt = documentString
@@ -135,10 +122,22 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         setResponseStream((prev) => prev + chunk);
       }
 
+      // Create attachment metadata for history
+      const attachments = uploadedFiles.map((file) => ({
+        name: file.name,
+        category: file.category,
+        size: file.size,
+        type: file.type,
+        content: file.content,
+        base64: file.base64,
+        parseError: file.parseError,
+      }));
+
       const userMessageWithImages: ChatMessage = {
         role: "user",
-        content: displayPrompt,
+        content: prompt,
         ...(base64Images.length > 0 && { images: base64Images }),
+        ...(attachments.length > 0 && { attachments }),
       };
 
       setConversationHistory((prevHistory) => [
@@ -172,28 +171,6 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   }, [setConversationHistory, setUploadedFiles]);
 
   useEffect(() => {
-    const loadModels = async () => {
-      try {
-        const fetchedModels = await fetchModels();
-        setModels(fetchedModels);
-      } catch (error) {
-        console.error("Failed to fetch models:", error);
-        toast(
-          "Failed to fetch models. Make sure your models are stored in default directory and server is running."
-        );
-      }
-    };
-
-    loadModels();
-  }, []);
-
-  useEffect(() => {
-    if (models.length > 0 && !currentModel) {
-      setCurrentModel(models[0]);
-    }
-  }, [models, currentModel, setCurrentModel]);
-
-  useEffect(() => {
     scrollToBottom();
   }, [
     conversationHistory,
@@ -205,13 +182,10 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <ChatContext.Provider
       value={{
-        models,
         prompt,
         setPrompt,
         userPromptPlaceholder,
         responseStream,
-        currentModel,
-        setCurrentModel,
         systemMessage,
         setSystemMessage,
         responseStreamLoading,

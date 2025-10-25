@@ -1,6 +1,7 @@
 import { ApplicationProvider } from "./ApplicationContext";
+import { AttachmentProvider } from "./AttachmentContext";
 import { ChatProvider } from "./ChatContext";
-import { FileUploadProvider } from "./FileUploadContext";
+import { ModelProvider } from "./ModelContext";
 
 const CoreProviders = ({ children }: { children: React.ReactNode }) => {
   return <ApplicationProvider>{children}</ApplicationProvider>;
@@ -8,9 +9,11 @@ const CoreProviders = ({ children }: { children: React.ReactNode }) => {
 
 const ServiceProviders = ({ children }: { children: React.ReactNode }) => {
   return (
-    <FileUploadProvider>
-      <ChatProvider>{children}</ChatProvider>
-    </FileUploadProvider>
+    <ModelProvider>
+      <AttachmentProvider>
+        <ChatProvider>{children}</ChatProvider>
+      </AttachmentProvider>
+    </ModelProvider>
   );
 };
 

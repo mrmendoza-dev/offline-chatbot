@@ -8,15 +8,19 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { Code, File, FileText, Image, X } from "lucide-react";
 import { useState } from "react";
-import type { UploadedFile } from "../types/attachment.types";
+import type { UploadedFile } from "../../types/attachment.types";
 
-interface FilePreviewProps {
+interface AttachmentPreviewProps {
   file: UploadedFile;
   index: number;
   onRemove: (index: number) => void;
 }
 
-export const FilePreview = ({ file, index, onRemove }: FilePreviewProps) => {
+export const AttachmentPreview = ({
+  file,
+  index,
+  onRemove,
+}: AttachmentPreviewProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -84,11 +88,7 @@ export const FilePreview = ({ file, index, onRemove }: FilePreviewProps) => {
             >
               <div className="space-y-2">
                 <img
-                  src={
-                    file.base64
-                      ? `data:${file.type};base64,${file.base64}`
-                      : file.url
-                  }
+                  src={file.url}
                   alt={file.name}
                   className="rounded-lg w-full h-auto object-cover"
                 />
