@@ -5,6 +5,20 @@ import type { ChatRequestBody } from "../types/chat.types";
 const router = express.Router();
 
 router.post("/ask", async (req: Request, res: Response) => {
+  let isClientConnected = true;
+
+  req.on("close", () => {
+    isClientConnected = false;
+  });
+
+  req.on("error", () => {
+    isClientConnected = false;
+  });
+
+  res.on("close", () => {
+    isClientConnected = false;
+  });
+
   try {
     const { conversationHistory, prompt, model, systemMessage, images } =
       req.body as ChatRequestBody;
@@ -39,13 +53,20 @@ router.post("/ask", async (req: Request, res: Response) => {
     });
 
     for await (const part of response) {
+      if (!isClientConnected) {
+        break; // Stop streaming if client disconnected
+      }
       res.write(part.message.content);
     }
 
-    res.end();
+    if (isClientConnected) {
+      res.end();
+    }
   } catch (error) {
     console.error("Error processing chat request:", error);
-    res.status(500).send("An error occurred while processing your request.");
+    if (isClientConnected) {
+      res.status(500).send("An error occurred while processing your request.");
+    }
   }
 });
 

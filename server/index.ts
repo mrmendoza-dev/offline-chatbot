@@ -27,7 +27,7 @@ app.use((err: Error, _req: Request, res: Response) => {
   res.status(500).json({ error: "Internal server error" });
 });
 
-const PORT = Number(process.env.VITE_API_PORT) || 8081;
+const PORT = Number(process.env.VITE_API_PORT) || 5001;
 
 findAvailablePort(PORT)
   .then((port) => {

@@ -279,6 +279,20 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     scrollToBottom,
   ]);
 
+  // Cleanup on unmount to prevent memory leaks and hanging connections
+  useEffect(() => {
+    return () => {
+      // Abort any active requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      // Cancel any active stream readers
+      if (readerRef.current) {
+        readerRef.current.cancel();
+      }
+    };
+  }, []);
+
   return (
     <ChatContext.Provider
       value={{

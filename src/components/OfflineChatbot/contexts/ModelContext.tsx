@@ -1,6 +1,7 @@
 import {
   ReactNode,
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -32,7 +33,7 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
     null
   );
 
-  const refreshModels = async () => {
+  const refreshModels = useCallback(async () => {
     setIsLoading(true);
     try {
       const fetchedModels = await fetchModels();
@@ -48,11 +49,11 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentModel, setCurrentModel]);
 
   useEffect(() => {
     refreshModels();
-  }, []);
+  }, [refreshModels]);
 
   return (
     <ModelContext.Provider
