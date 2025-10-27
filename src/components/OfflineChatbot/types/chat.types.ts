@@ -15,6 +15,15 @@ export interface OllamaModel {
   };
 }
 
+export interface LoadedModel {
+  name: string;
+  id: string;
+  size: string;
+  processor: string;
+  context: string;
+  until: string;
+}
+
 export interface ChatMessage {
   role: "user" | "assistant" | "system";
   content: string;

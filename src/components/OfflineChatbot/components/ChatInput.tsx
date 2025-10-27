@@ -14,6 +14,7 @@ import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAttachment } from "../contexts/AttachmentContext";
 import { useChatContext } from "../contexts/ChatContext";
+import { useModelContext } from "../contexts/ModelContext";
 import { processFiles } from "../utils/attachment/conversion";
 import { captureScreen } from "../utils/deviceUtility";
 import { FilePreview } from "./FilePreview";
@@ -40,11 +41,14 @@ export const ChatInput = () => {
     isLoading,
   } = useAttachment();
 
+  const { isModelLoading } = useModelContext();
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const hasPromptOrFiles = prompt.trim().length > 0 || uploadedFiles.length > 0;
-  const isDisabled = responseStreamLoading || !hasPromptOrFiles;
+  const isDisabled =
+    responseStreamLoading || !hasPromptOrFiles || isModelLoading;
 
   const handleScreenCapture = useCallback(async () => {
     try {

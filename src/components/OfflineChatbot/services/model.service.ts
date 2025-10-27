@@ -1,6 +1,11 @@
-import type { ChatRequest, OllamaModel } from "../types/chat.types";
+import type {
+  ChatRequest,
+  LoadedModel,
+  OllamaModel,
+} from "../types/chat.types";
 import {
   BASE_URL,
+  apiClient,
   endpoints,
   handleApiError,
   ollamaClient,
@@ -12,6 +17,31 @@ export const fetchModels = async (): Promise<OllamaModel[]> => {
     return response.data.models || [];
   } catch (error) {
     console.error("Failed to fetch models:", error);
+    throw new Error(handleApiError(error));
+  }
+};
+
+export const fetchLoadedModels = async (): Promise<LoadedModel[]> => {
+  try {
+    const response = await apiClient.get("/models/loaded");
+    return response.data.models || [];
+  } catch (error) {
+    console.error("Failed to fetch loaded models:", error);
+    throw new Error(handleApiError(error));
+  }
+};
+
+export const loadModel = async (modelName: string): Promise<void> => {
+  try {
+    // Send a minimal request to Ollama to load the model into memory
+    await ollamaClient.post("/generate", {
+      model: modelName,
+      prompt: "",
+      stream: false,
+      keep_alive: "5m", // Keep model loaded for 5 minutes
+    });
+  } catch (error) {
+    console.error("Failed to load model:", error);
     throw new Error(handleApiError(error));
   }
 };

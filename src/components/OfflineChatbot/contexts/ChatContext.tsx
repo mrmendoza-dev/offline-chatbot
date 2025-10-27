@@ -38,7 +38,7 @@ const ChatContext = createContext<ChatContextType | null>(null);
 
 export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const { uploadedFiles, setUploadedFiles } = useAttachment();
-  const { currentModel } = useModelContext();
+  const { currentModel, isModelLoading } = useModelContext();
   const [prompt, setPrompt] = useState<string>("");
   const [userPromptPlaceholder, setUserPromptPlaceholder] = useState<
     string | null
@@ -129,8 +129,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const handleAskPrompt = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    // Prevent submission if generation is already active
-    if (responseStreamLoading) {
+    // Prevent submission if generation is already active or model is loading
+    if (responseStreamLoading || isModelLoading) {
       return;
     }
 
@@ -155,7 +155,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     );
 
     // Create abort controller for this request
-    abortControllerRef.current = new AbortController();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
 
     setUserPromptPlaceholder(prompt);
     setPrompt("");
@@ -208,13 +209,39 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
       const decoder = new TextDecoder("utf-8");
       let botResponseStream = "";
 
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        botResponseStream += chunk;
-        setResponseStream((prev) => prev + chunk);
+      // Add timeout to detect hanging
+      let streamTimeout: ReturnType<typeof setTimeout> | null = null;
+
+      const resetTimeout = () => {
+        if (streamTimeout) {
+          clearTimeout(streamTimeout);
+        }
+        streamTimeout = setTimeout(() => {
+          console.error("Stream timeout - no data received for 60 seconds");
+          reader.cancel();
+          throw new Error("Stream timeout - no response from server");
+        }, 60000);
+      };
+
+      try {
+        resetTimeout(); // Initial timeout
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          clearTimeout(streamTimeout!); // Clear previous timeout
+
+          const chunk = decoder.decode(value, { stream: true });
+          botResponseStream += chunk;
+          setResponseStream((prev) => prev + chunk);
+
+          resetTimeout(); // Reset timeout for next chunk
+        }
+      } finally {
+        if (streamTimeout) {
+          clearTimeout(streamTimeout);
+        }
       }
 
       const userMessageWithImages: ChatMessage = {
@@ -252,8 +279,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === "Enter" && !event.shiftKey) {
-      // Prevent submission if generation is active
-      if (responseStreamLoading) {
+      // Prevent submission if generation is active or model is loading
+      if (responseStreamLoading || isModelLoading) {
         event.preventDefault();
         return;
       }

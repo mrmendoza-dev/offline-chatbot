@@ -14,46 +14,52 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "framer-motion";
 import { PanelLeft, PanelRight, Settings, SquarePen } from "lucide-react";
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useApplicationContext } from "../../contexts/ApplicationContext";
+import { useChatContext } from "../../contexts/ChatContext";
 import { SettingsDialog } from "../SettingsDialog";
 
 export const ChatSidebar = ({ className }: { className?: string }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const { sidebarOpen, setSidebarOpen } = useApplicationContext();
+  const { resetChat } = useChatContext();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const chats = [
-    {
-      title: "Chat 1",
-      messages: [
-        {
-          role: "user",
-          content: "Hello, how are you?",
-        },
-        {
-          role: "assistant",
-          content: "I'm good, thank you!",
-        },
-      ],
-    },
-    {
-      title: "Chat 2",
-      messages: [],
-    },
-    {
-      title: "Chat 3",
-      messages: [
-        {
-          role: "user",
-          content: "Hello, how are you?",
-        },
-      ],
-    },
-  ];
+  // TODO: Replace with actual new chat logic
+  const handleNewChat = () => {
+    resetChat();
+  };
+
+  // const chats = [
+  //   {
+  //     title: "Chat 1",
+  //     messages: [
+  //       {
+  //         role: "user",
+  //         content: "Hello, how are you?",
+  //       },
+  //       {
+  //         role: "assistant",
+  //         content: "I'm good, thank you!",
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     title: "Chat 2",
+  //     messages: [],
+  //   },
+  //   {
+  //     title: "Chat 3",
+  //     messages: [
+  //       {
+  //         role: "user",
+  //         content: "Hello, how are you?",
+  //       },
+  //     ],
+  //   },
+  // ];
 
   return (
     <Sidebar
@@ -93,7 +99,7 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
               <SidebarMenuItem key="New Chat">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild onClick={handleNewChat}>
                       <a href="#">
                         <SquarePen />
                         <span>New Chat</span>
@@ -109,7 +115,7 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
+        {/* <SidebarGroup>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: sidebarOpen ? 1 : 0 }}
@@ -140,7 +146,7 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
               </AnimatePresence>
             </SidebarMenu>
           </SidebarGroupContent>
-        </SidebarGroup>
+        </SidebarGroup> */}
 
         <div className="mt-auto">
           <SidebarGroup>

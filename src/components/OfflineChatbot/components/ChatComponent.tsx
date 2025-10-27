@@ -7,6 +7,8 @@ import { ChatbotWelcome } from "./ChatbotWelcome";
 import { ScrollToTopButton } from "./ScrollToTopButton";
 import { ChatMessage } from "./chat/ChatMessage";
 
+import {WebLLMLight} from "./WebLLMLight";
+
 export const ChatComponent = () => {
   const {
     userPromptPlaceholder,
@@ -32,6 +34,9 @@ export const ChatComponent = () => {
 
   return (
     <div className="relative bg-background flex flex-col h-full">
+     
+     <WebLLMLight />
+
       <div className="overflow-y-auto flex-1">
         <div ref={messagesStartRef} className="max-w-5xl mx-auto p-4 space-y-4">
           {!conversationHistory.length && !responseStreamLoading && (

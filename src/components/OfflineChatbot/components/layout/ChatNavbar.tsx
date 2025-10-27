@@ -1,11 +1,4 @@
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
@@ -13,8 +6,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useModelContext } from "../../contexts/ModelContext";
-import type { OllamaModel } from "../../types/chat.types";
 import { SettingsDialog } from "../SettingsDialog";
+import { ModelSelectorPopover } from "./ModelSelectorPopover";
 
 export const ChatNavbar = ({ className }: { className?: string }) => {
   const handleGithub = () => {
@@ -24,6 +17,8 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
   const { resetChat } = useChatContext();
   const { models, currentModel, setCurrentModel, isLoading } =
     useModelContext();
+
+    
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -38,38 +33,13 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             </span>
           </Link>
 
-          {/* Model selector */}
-          <div className="flex items-center gap-0">
-            <Select
-              value={currentModel?.model || ""}
-              onValueChange={(value) => {
-                const selectedModel = models.find(
-                  (m: OllamaModel) => m.model === value
-                );
-                if (selectedModel) setCurrentModel(selectedModel);
-              }}
-              disabled={isLoading}
-            >
-              <SelectTrigger className="max-w-48 text-foreground text-sm border-none shadow-none !bg-transparent">
-                <SelectValue
-                  placeholder={
-                    isLoading ? "Loading models..." : "Select a model"
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {models?.map((model: OllamaModel, index: number) => (
-                  <SelectItem
-                    key={index}
-                    value={model.model}
-                    className="text-foreground"
-                  >
-                    {model.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Model selector popover */}
+          <ModelSelectorPopover
+            models={models}
+            currentModel={currentModel}
+            setCurrentModel={setCurrentModel}
+            isLoading={isLoading}
+          />
         </div>
 
         <div className="flex items-center justify-center gap-1">

@@ -2,6 +2,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import chatRoutes from "./routes/chat.routes.js";
+import modelRoutes from "./routes/model.routes.js";
+import { logger } from "./utils/logger.js";
 import { findAvailablePort } from "./utils/port-manager.js";
 
 const app = express();
@@ -15,6 +17,7 @@ app.use(cors());
 
 // Routes
 app.use("/", chatRoutes);
+app.use("/", modelRoutes);
 
 // Health check endpoint
 app.get("/health", (_req: Request, res: Response) => {
@@ -32,16 +35,16 @@ const PORT = Number(process.env.VITE_API_PORT) || 5001;
 findAvailablePort(PORT)
   .then((port) => {
     app.listen(port, () => {
-      console.log(`Server running → http://localhost:${port}`);
-      console.log(`API base URL: http://localhost:${port}`);
+      logger.success(`Server running on http://localhost:${port}`);
+      logger.port(`API endpoint: http://localhost:${port}/ask`);
 
       // Log if port changed
       if (port !== PORT) {
-        console.log(`⚠️  Port ${PORT} was in use, using port ${port} instead`);
+        logger.warning(`Port ${PORT} was in use, using port ${port} instead`);
       }
     });
   })
   .catch((err) => {
-    console.error("Failed to start server:", err);
+    logger.error("Failed to start server:", err);
     process.exit(1);
   });

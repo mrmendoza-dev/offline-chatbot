@@ -16,6 +16,8 @@ interface ModelContextType {
   currentModel: OllamaModel | null;
   setCurrentModel: (model: OllamaModel | null) => void;
   isLoading: boolean;
+  isModelLoading: boolean;
+  setIsModelLoading: (loading: boolean) => void;
   refreshModels: () => Promise<void>;
 }
 
@@ -28,6 +30,7 @@ interface ModelProviderProps {
 export const ModelProvider = ({ children }: ModelProviderProps) => {
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModelLoading, setIsModelLoading] = useState(false);
   const [currentModel, setCurrentModel] = useLocalStorage<OllamaModel | null>(
     "currentModel",
     null
@@ -62,6 +65,8 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
         currentModel,
         setCurrentModel,
         isLoading,
+        isModelLoading,
+        setIsModelLoading,
         refreshModels,
       }}
     >

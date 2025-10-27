@@ -31,5 +31,6 @@ export const endpoints = {
   health: "/health",
   ollama: {
     tags: "/tags",
+    ps: "/ps", // Lists models currently loaded in memory
   },
 } as const;

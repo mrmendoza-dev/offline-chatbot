@@ -21,9 +21,9 @@ export default defineConfig({
         "favicon/masked-icon.svg",
       ],
       manifest: {
-        name: "Offline AI Chatbot",
+        name: "Offline Chatbot",
         short_name: "Local AI",
-        description: "Offline AI Chatbot powered by Ollama",
+        description: "Offline AI Chatbot powered by open-source models",
         theme_color: "#ffffff",
         background_color: "#ffffff",
         display: "standalone",

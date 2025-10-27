@@ -1,29 +1,23 @@
 import express, { Request, Response } from "express";
 import ollama from "ollama";
 import type { ChatRequestBody } from "../types/chat.types";
+import { logger } from "../utils/logger.js";
 
 const router = express.Router();
 
 router.post("/ask", async (req: Request, res: Response) => {
-  let isClientConnected = true;
-
-  req.on("close", () => {
-    isClientConnected = false;
-  });
-
-  req.on("error", () => {
-    isClientConnected = false;
-  });
-
-  res.on("close", () => {
-    isClientConnected = false;
-  });
+  const startTime = Date.now();
 
   try {
     const { conversationHistory, prompt, model, systemMessage, images } =
       req.body as ChatRequestBody;
 
+    logger.request(
+      `Chat request - Model: ${model}, Prompt: ${prompt?.length || 0} chars`
+    );
+
     if (!prompt || !model) {
+      logger.error("Missing required fields");
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -39,6 +33,8 @@ router.post("/ask", async (req: Request, res: Response) => {
       ? [system, ...conversationHistory]
       : [system];
 
+    logger.model(`Starting Ollama chat stream for: ${model}`);
+
     const response = await ollama.chat({
       model: model,
       messages: [
@@ -52,19 +48,36 @@ router.post("/ask", async (req: Request, res: Response) => {
       stream: true,
     });
 
+    let chunkCount = 0;
+    let charCount = 0;
+
     for await (const part of response) {
-      if (!isClientConnected) {
-        break; // Stop streaming if client disconnected
+      const content = part.message.content;
+      if (content) {
+        const writeSuccess = res.write(content);
+        chunkCount++;
+        charCount += content.length;
+
+        if (chunkCount === 1) {
+          logger.stream(`First chunk sent (${content.length} chars)`);
+        }
+
+        if (!writeSuccess) {
+          logger.warning("Write buffer full, pausing");
+          await new Promise((resolve) => res.once("drain", resolve));
+        }
       }
-      res.write(part.message.content);
     }
 
-    if (isClientConnected) {
-      res.end();
-    }
+    const duration = Date.now() - startTime;
+    logger.success(
+      `Stream complete: ${chunkCount} chunks, ${charCount} chars, ${duration}ms`
+    );
+
+    res.end();
   } catch (error) {
-    console.error("Error processing chat request:", error);
-    if (isClientConnected) {
+    logger.error("Chat request failed:", error);
+    if (!res.headersSent) {
       res.status(500).send("An error occurred while processing your request.");
     }
   }
