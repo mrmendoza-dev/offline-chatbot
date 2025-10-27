@@ -1,9 +1,11 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useApplicationContext } from "../../contexts/ApplicationContext";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useModelContext } from "../../contexts/ModelContext";
 import { SettingsDialog } from "../SettingsDialog";
@@ -17,8 +19,7 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
   const { resetChat } = useChatContext();
   const { models, currentModel, setCurrentModel, isLoading } =
     useModelContext();
-
-    
+  const { modelSelectorOpen, setModelSelectorOpen } = useApplicationContext();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
@@ -39,7 +40,14 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             currentModel={currentModel}
             setCurrentModel={setCurrentModel}
             isLoading={isLoading}
+            open={modelSelectorOpen}
+            onOpenChange={setModelSelectorOpen}
           />
+          {currentModel && (
+            <Badge variant="outline" className="ml-1">
+              {currentModel.provider === "ollama" ? "Ollama" : "WebLLM"}
+            </Badge>
+          )}
         </div>
 
         <div className="flex items-center justify-center gap-1">

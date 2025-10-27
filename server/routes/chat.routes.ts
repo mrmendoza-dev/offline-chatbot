@@ -9,16 +9,33 @@ router.post("/ask", async (req: Request, res: Response) => {
   const startTime = Date.now();
 
   try {
-    const { conversationHistory, prompt, model, systemMessage, images } =
-      req.body as ChatRequestBody;
+    const {
+      conversationHistory,
+      prompt,
+      model,
+      systemMessage,
+      images,
+      options,
+    } = req.body as ChatRequestBody;
 
     logger.request(
       `Chat request - Model: ${model}, Prompt: ${prompt?.length || 0} chars`
     );
 
-    if (!prompt || !model) {
-      logger.error("Missing required fields");
-      return res.status(400).json({ error: "Missing required fields" });
+    if (!model) {
+      logger.error("Missing model field");
+      return res.status(400).json({ error: "Missing model" });
+    }
+
+    if (
+      !prompt &&
+      (!images || images.length === 0) &&
+      (!conversationHistory || conversationHistory.length === 0)
+    ) {
+      logger.error("No input provided");
+      return res
+        .status(400)
+        .json({ error: "Provide prompt, images, or conversation history" });
     }
 
     res.setHeader("Content-Type", "text/plain");
@@ -46,6 +63,13 @@ router.post("/ask", async (req: Request, res: Response) => {
         },
       ],
       stream: true,
+      options: options
+        ? {
+            temperature: options.temperature,
+            top_p: options.top_p,
+            seed: options.seed,
+          }
+        : undefined,
     });
 
     let chunkCount = 0;

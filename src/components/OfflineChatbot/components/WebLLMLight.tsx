@@ -165,7 +165,9 @@ export const WebLLMLight = () => {
           const stats = await engineRef.current!.runtimeStatsText();
           setChatStats(stats);
           setShowStats(true);
-        } catch {}
+        } catch (error) {
+          console.warn("Failed to get stats:", error);
+        }
       },
       (err) => {
         console.error("Streaming error:", err);

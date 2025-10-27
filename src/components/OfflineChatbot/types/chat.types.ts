@@ -1,11 +1,20 @@
 import type { AttachmentMetadata } from "./attachment.types";
 
+export type ModelProvider = "ollama" | "webllm";
+
+export interface ModelOptions {
+  temperature: number;
+  top_p: number;
+  seed?: number;
+}
+
 export interface OllamaModel {
   name: string;
   model: string;
   modified_at: string;
   size: number;
   digest: string;
+  provider: ModelProvider;
   details: {
     format: string;
     family: string;
@@ -43,7 +52,9 @@ export interface ChatRequest {
   prompt: string;
   model: string;
   systemMessage: string;
+  provider: ModelProvider;
   images?: string[];
+  options?: ModelOptions;
 }
 
 export interface ChatStreamResponse {

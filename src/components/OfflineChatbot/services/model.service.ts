@@ -10,11 +10,17 @@ import {
   handleApiError,
   ollamaClient,
 } from "../utils/api";
+import { sendWebLLMMessage } from "./provider.service";
 
 export const fetchModels = async (): Promise<OllamaModel[]> => {
   try {
     const response = await ollamaClient.get(endpoints.ollama.tags);
-    return response.data.models || [];
+    const models = response.data.models || [];
+    // Add provider field to all Ollama models
+    return models.map((model: OllamaModel) => ({
+      ...model,
+      provider: "ollama" as const,
+    }));
   } catch (error) {
     console.error("Failed to fetch models:", error);
     throw new Error(handleApiError(error));
@@ -50,6 +56,12 @@ export const sendChatMessage = async (
   request: ChatRequest,
   signal?: AbortSignal
 ): Promise<ReadableStream<Uint8Array>> => {
+  // Route to WebLLM if provider is webllm
+  if (request.provider === "webllm") {
+    return sendWebLLMMessage(request, signal);
+  }
+
+  // Otherwise use Ollama backend
   const response = await fetch(`${BASE_URL}/ask`, {
     method: "POST",
     headers: {

@@ -10,18 +10,19 @@ import {
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "framer-motion";
 import { Camera, Paperclip, Send, Settings, Square } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAttachment } from "../contexts/AttachmentContext";
 import { useChatContext } from "../contexts/ChatContext";
 import { useModelContext } from "../contexts/ModelContext";
 import { processFiles } from "../utils/attachment/conversion";
 import { captureScreen } from "../utils/deviceUtility";
+import { supportsVision } from "../utils/modelUtils";
 import { FilePreview } from "./FilePreview";
 import { SettingsDialog } from "./SettingsDialog";
 import { AttachmentLoadingPlaceholder } from "./attachments/AttachmentLoadingPlaceholder";
 
-export const ChatInput = () => {
+export const ChatInput = memo(() => {
   const {
     prompt,
     setPrompt,
@@ -41,7 +42,7 @@ export const ChatInput = () => {
     isLoading,
   } = useAttachment();
 
-  const { isModelLoading } = useModelContext();
+  const { isModelLoading, currentModel } = useModelContext();
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -150,21 +151,23 @@ export const ChatInput = () => {
                   <p>Attach file</p>
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleScreenCapture}
-                    disabled={responseStreamLoading}
-                  >
-                    <Camera className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Capture screen</p>
-                </TooltipContent>
-              </Tooltip>
+              {supportsVision(currentModel) && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleScreenCapture}
+                      disabled={responseStreamLoading}
+                    >
+                      <Camera className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Capture screen</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -187,7 +190,7 @@ export const ChatInput = () => {
                 size="icon"
                 className="h-9 w-9"
                 onClick={stopGeneration}
-                variant="destructive"
+                variant="ghost"
               >
                 <Square className="h-4 w-4" />
                 <span className="sr-only">Stop generation</span>
@@ -198,6 +201,7 @@ export const ChatInput = () => {
                 className="h-9 w-9"
                 onClick={handleAskPrompt}
                 disabled={isDisabled}
+                variant="ghost"
               >
                 <Send className="h-4 w-4" />
                 <span className="sr-only">Send message</span>
@@ -209,4 +213,4 @@ export const ChatInput = () => {
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
-};
+});

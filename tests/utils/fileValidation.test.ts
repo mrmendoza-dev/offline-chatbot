@@ -1,63 +1,61 @@
 import {
-  checkFileType,
-  isFileAccepted,
+  filterAcceptedFiles,
+  getFileCategory,
   validateFile,
-} from "@/components/OfflineChatbot/utils/fileValidation";
+} from "@/components/OfflineChatbot/utils/attachment/validation";
 import { describe, expect, it } from "vitest";
 
 describe("fileValidation utilities", () => {
-  describe("checkFileType", () => {
+  describe("getFileCategory", () => {
     it("should identify image files", () => {
-      const file = { type: "image/jpeg" } as File;
-      expect(checkFileType(file)).toBe("image");
+      const file = new File(["content"], "test.jpg", { type: "image/jpeg" });
+      expect(getFileCategory(file)).toBe("image");
     });
 
-    it("should identify document files", () => {
-      const file = { type: "text/plain" } as File;
-      expect(checkFileType(file)).toBe("document");
+    it("should identify text files", () => {
+      const file = new File(["content"], "test.txt", { type: "text/plain" });
+      expect(getFileCategory(file)).toBe("text");
     });
 
-    it("should return 'other' for unsupported files", () => {
-      const file = { type: "video/mp4" } as File;
-      expect(checkFileType(file)).toBe("other");
+    it("should return 'unsupported' for unsupported files", () => {
+      const file = new File(["content"], "test.exe", {
+        type: "application/x-msdownload",
+      });
+      expect(getFileCategory(file)).toBe("unsupported");
     });
   });
 
   describe("validateFile", () => {
     it("should validate accepted file types", () => {
-      const file = {
-        name: "test.json",
+      const file = new File(['{"test": "data"}'], "test.json", {
         type: "application/json",
-        size: 1000,
-      } as File;
+      });
 
       const result = validateFile(file);
-      expect(result.isAccepted).toBe(true);
-      expect(result.category).toBe("document");
-      expect(result.extension).toBe("json");
+      expect(result.isValid).toBe(true);
+      expect(result.category).toBe("text");
     });
 
     it("should reject unsupported file types", () => {
-      const file = {
-        name: "test.exe",
+      const file = new File(["content"], "test.exe", {
         type: "application/x-msdownload",
-        size: 1000,
-      } as File;
+      });
 
       const result = validateFile(file);
-      expect(result.isAccepted).toBe(false);
+      expect(result.isValid).toBe(false);
     });
   });
 
-  describe("isFileAccepted", () => {
-    it("should return true for accepted files", () => {
-      const file = { type: "image/png" } as File;
-      expect(isFileAccepted(file)).toBe(true);
-    });
+  describe("filterAcceptedFiles", () => {
+    it("should filter only accepted files", () => {
+      const files = [
+        new File(["content"], "test.txt", { type: "text/plain" }),
+        new File(["content"], "test.exe", { type: "application/x-msdownload" }),
+        new File(["content"], "test.png", { type: "image/png" }),
+      ];
 
-    it("should return false for rejected files", () => {
-      const file = { type: "application/zip" } as File;
-      expect(isFileAccepted(file)).toBe(false);
+      const accepted = filterAcceptedFiles(files);
+      expect(accepted).toHaveLength(2);
     });
   });
 });

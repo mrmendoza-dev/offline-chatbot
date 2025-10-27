@@ -15,6 +15,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
+      workbox: {
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB (increased from 2 MB)
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+      },
       includeAssets: [
         "favicon/favicon.ico",
         "favicon/apple-touch-icon.png",
@@ -48,6 +52,25 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          "ui-vendor": [
+            "@radix-ui/react-dialog",
+            "@radix-ui/react-dropdown-menu",
+            "@radix-ui/react-select",
+            "@radix-ui/react-toast",
+            "@radix-ui/react-tabs",
+          ],
+          "ai-vendor": ["@mlc-ai/web-llm"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // 1 MB
+  },
   test: {
     globals: true,
     environment: "jsdom",

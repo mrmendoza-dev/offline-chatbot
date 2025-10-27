@@ -1,9 +1,11 @@
-import { ReactNode, createContext, useContext } from "react";
+import { ReactNode, createContext, useContext, useMemo } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 
 interface ApplicationContextType {
   sidebarOpen: boolean;
   setSidebarOpen: (sidebarOpen: boolean) => void;
+  modelSelectorOpen: boolean;
+  setModelSelectorOpen: (open: boolean) => void;
 }
 
 const ApplicationContext = createContext<ApplicationContextType | null>(null);
@@ -20,11 +22,20 @@ export const useApplicationContext = () => {
 
 export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useLocalStorage("sidebarOpen", true);
+  const [modelSelectorOpen, setModelSelectorOpen] = useLocalStorage(
+    "modelSelectorOpen",
+    false
+  );
 
-  const value = {
-    sidebarOpen,
-    setSidebarOpen,
-  };
+  const value = useMemo(
+    () => ({
+      sidebarOpen,
+      setSidebarOpen,
+      modelSelectorOpen,
+      setModelSelectorOpen,
+    }),
+    [sidebarOpen, setSidebarOpen, modelSelectorOpen, setModelSelectorOpen]
+  );
 
   return (
     <ApplicationContext.Provider value={value}>

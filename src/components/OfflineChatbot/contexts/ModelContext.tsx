@@ -9,6 +9,10 @@ import {
 import { toast } from "sonner";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { fetchModels } from "../services/model.service";
+import {
+  fetchWebLLMModels,
+  initializeWebLLM,
+} from "../services/provider.service";
 import type { OllamaModel } from "../types/chat.types";
 
 interface ModelContextType {
@@ -19,6 +23,8 @@ interface ModelContextType {
   isModelLoading: boolean;
   setIsModelLoading: (loading: boolean) => void;
   refreshModels: () => Promise<void>;
+  loadWebLLMModel: (model: OllamaModel) => Promise<void>;
+  webLLMLoadProgress: { text: string; progress: number } | null;
 }
 
 const ModelContext = createContext<ModelContextType | null>(null);
@@ -31,6 +37,10 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModelLoading, setIsModelLoading] = useState(false);
+  const [webLLMLoadProgress, setWebLLMLoadProgress] = useState<{
+    text: string;
+    progress: number;
+  } | null>(null);
   const [currentModel, setCurrentModel] = useLocalStorage<OllamaModel | null>(
     "currentModel",
     null
@@ -39,12 +49,16 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
   const refreshModels = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedModels = await fetchModels();
-      setModels(fetchedModels);
+      const [ollamaModels, webLLMModels] = await Promise.all([
+        fetchModels().catch(() => []),
+        Promise.resolve(fetchWebLLMModels()),
+      ]);
+      const allModels = [...ollamaModels, ...webLLMModels];
+      setModels(allModels);
 
       // If no current model is set, try to set the first available model
-      if (!currentModel && fetchedModels.length > 0) {
-        setCurrentModel(fetchedModels[0]);
+      if (!currentModel && allModels.length > 0) {
+        setCurrentModel(allModels[0]);
       }
     } catch (error) {
       console.error("Failed to fetch models:", error);
@@ -53,6 +67,39 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
       setIsLoading(false);
     }
   }, [currentModel, setCurrentModel]);
+
+  const loadWebLLMModel = useCallback(
+    async (model: OllamaModel) => {
+      if (model.provider !== "webllm") return;
+
+      setIsModelLoading(true);
+      setWebLLMLoadProgress({ text: "Initializing...", progress: 0 });
+
+      const loadingToast = toast.loading("Loading WebLLM model...");
+
+      try {
+        await initializeWebLLM(model.model, (text, progress) => {
+          setWebLLMLoadProgress({ text, progress });
+          toast.loading(text, { id: loadingToast });
+        });
+
+        setCurrentModel(model);
+        toast.success(`${model.name} loaded successfully`, {
+          id: loadingToast,
+        });
+      } catch (error) {
+        console.error("Failed to load WebLLM model:", error);
+        toast.error(`Failed to load ${model.name}`, {
+          id: loadingToast,
+          description: error instanceof Error ? error.message : "Unknown error",
+        });
+      } finally {
+        setIsModelLoading(false);
+        setWebLLMLoadProgress(null);
+      }
+    },
+    [setCurrentModel]
+  );
 
   useEffect(() => {
     refreshModels();
@@ -68,6 +115,8 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
         isModelLoading,
         setIsModelLoading,
         refreshModels,
+        loadWebLLMModel,
+        webLLMLoadProgress,
       }}
     >
       {children}

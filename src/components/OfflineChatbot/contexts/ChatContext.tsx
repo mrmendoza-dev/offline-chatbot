@@ -10,8 +10,9 @@ import { toast } from "sonner";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { generateDocumentString } from "../services/message.service";
 import { sendChatMessage } from "../services/model.service";
-import type { ChatMessage } from "../types/chat.types";
+import type { ChatMessage, ModelOptions } from "../types/chat.types";
 import { convertImagesToBase64 } from "../utils/attachment/conversion";
+import { supportsVision } from "../utils/modelUtils";
 import { useAttachment } from "./AttachmentContext";
 import { useModelContext } from "./ModelContext";
 
@@ -22,6 +23,8 @@ interface ChatContextType {
   responseStream: string;
   systemMessage: string;
   setSystemMessage: (message: string) => void;
+  modelOptions: ModelOptions;
+  setModelOptions: (options: ModelOptions) => void;
   responseStreamLoading: boolean;
   conversationHistory: ChatMessage[];
   setConversationHistory: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
@@ -49,6 +52,11 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
   const [systemMessage, setSystemMessage] = useLocalStorage<string>(
     "systemMessage",
     "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc."
+  );
+
+  const [modelOptions, setModelOptions] = useLocalStorage<ModelOptions>(
+    "modelOptions",
+    { temperature: 1.0, top_p: 1.0, seed: undefined }
   );
 
   const [conversationHistory, setConversationHistory] = useLocalStorage<
@@ -126,168 +134,207 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
     currentAttachmentsRef.current = [];
   }, [responseStream, setConversationHistory, setUploadedFiles]);
 
-  const handleAskPrompt = async (event: React.FormEvent) => {
-    event.preventDefault();
+  const handleAskPrompt = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
 
-    // Prevent submission if generation is already active or model is loading
-    if (responseStreamLoading || isModelLoading) {
-      return;
-    }
+      // Prevent submission if generation is already active or model is loading
+      if (responseStreamLoading || isModelLoading) {
+        return;
+      }
 
-    if (!prompt && uploadedFiles.length === 0) {
-      toast("Please enter a prompt.");
-      return;
-    }
+      if (!prompt && uploadedFiles.length === 0) {
+        toast("Please enter a prompt or attach a file.");
+        return;
+      }
 
-    if (!currentModel) {
-      toast("Please select a model.");
-      return;
-    }
+      if (!currentModel) {
+        toast("Please select a model.");
+        return;
+      }
 
-    const uploadedImages = uploadedFiles.filter(
-      (file) => file.category === "image"
-    );
-    const uploadedTextFiles = uploadedFiles.filter(
-      (file) =>
-        file.category === "text" ||
-        file.category === "code" ||
-        file.category === "pdf"
-    );
-
-    // Create abort controller for this request
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setUserPromptPlaceholder(prompt);
-    setPrompt("");
-    setResponseStream("");
-    setResponseStreamLoading(true);
-
-    // Store current prompt and attachments for potential cancellation
-    currentPromptRef.current = prompt;
-
-    try {
-      const base64Images =
-        uploadedImages.length > 0
-          ? await convertImagesToBase64(uploadedImages)
-          : [];
-
-      const documentString =
-        uploadedTextFiles.length > 0
-          ? generateDocumentString(uploadedTextFiles)
-          : "";
-
-      const combinedPrompt = documentString
-        ? `${documentString}\n\n${prompt}`
-        : prompt;
-
-      // Create attachment metadata before streaming
-      const attachments = uploadedFiles.map((file) => ({
-        name: file.name,
-        category: file.category,
-        size: file.size,
-        type: file.type,
-        content: file.content,
-        base64: file.base64,
-        parseError: file.parseError,
-      }));
-      currentAttachmentsRef.current = attachments;
-
-      const stream = await sendChatMessage(
-        {
-          conversationHistory,
-          prompt: combinedPrompt,
-          model: currentModel.model,
-          systemMessage,
-          images: base64Images,
-        },
-        abortControllerRef.current.signal
+      const uploadedImages = uploadedFiles.filter(
+        (file) => file.category === "image"
+      );
+      const uploadedTextFiles = uploadedFiles.filter(
+        (file) =>
+          file.category === "text" ||
+          file.category === "code" ||
+          file.category === "pdf"
       );
 
-      const reader = stream.getReader();
-      readerRef.current = reader;
-      const decoder = new TextDecoder("utf-8");
-      let botResponseStream = "";
+      // Create abort controller for this request
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      // Add timeout to detect hanging
-      let streamTimeout: ReturnType<typeof setTimeout> | null = null;
+      setUserPromptPlaceholder(prompt);
+      setPrompt("");
+      setResponseStream("");
+      setResponseStreamLoading(true);
 
-      const resetTimeout = () => {
-        if (streamTimeout) {
-          clearTimeout(streamTimeout);
-        }
-        streamTimeout = setTimeout(() => {
-          console.error("Stream timeout - no data received for 60 seconds");
-          reader.cancel();
-          throw new Error("Stream timeout - no response from server");
-        }, 60000);
-      };
+      // Store current prompt and attachments for potential cancellation
+      currentPromptRef.current = prompt;
 
       try {
-        resetTimeout(); // Initial timeout
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+        const base64Images =
+          uploadedImages.length > 0
+            ? await convertImagesToBase64(uploadedImages)
+            : [];
 
-          clearTimeout(streamTimeout!); // Clear previous timeout
+        const hasImages = base64Images.length > 0;
+        const modelSupportsVision = supportsVision(currentModel);
 
-          const chunk = decoder.decode(value, { stream: true });
-          botResponseStream += chunk;
-          setResponseStream((prev) => prev + chunk);
-
-          resetTimeout(); // Reset timeout for next chunk
+        if (hasImages && !modelSupportsVision) {
+          toast.warning(
+            "Current model doesn't support vision. Images will be ignored.",
+            { duration: 4000 }
+          );
         }
+
+        // Only send images if model supports them
+        const imagesToSend = modelSupportsVision ? base64Images : undefined;
+
+        const documentString =
+          uploadedTextFiles.length > 0
+            ? generateDocumentString(uploadedTextFiles)
+            : "";
+
+        const combinedPrompt = documentString
+          ? `${documentString}\n\n${prompt}`
+          : prompt;
+
+        // Create attachment metadata before streaming
+        const attachments = uploadedFiles.map((file) => ({
+          name: file.name,
+          category: file.category,
+          size: file.size,
+          type: file.type,
+          content: file.content,
+          base64: file.base64,
+          parseError: file.parseError,
+        }));
+        currentAttachmentsRef.current = attachments;
+
+        const stream = await sendChatMessage(
+          {
+            conversationHistory,
+            prompt: combinedPrompt,
+            model: currentModel.model,
+            systemMessage,
+            provider: currentModel.provider,
+            images: imagesToSend,
+            options: modelOptions,
+          },
+          abortControllerRef.current.signal
+        );
+
+        const reader = stream.getReader();
+        readerRef.current = reader;
+        const decoder = new TextDecoder("utf-8");
+        let botResponseStream = "";
+
+        // Add timeout to detect hanging
+        let streamTimeout: ReturnType<typeof setTimeout> | null = null;
+
+        const resetTimeout = () => {
+          if (streamTimeout) {
+            clearTimeout(streamTimeout);
+          }
+          streamTimeout = setTimeout(() => {
+            console.error("Stream timeout - no data received for 60 seconds");
+            reader.cancel();
+            throw new Error("Stream timeout - no response from server");
+          }, 60000);
+        };
+
+        try {
+          resetTimeout(); // Initial timeout
+          // eslint-disable-next-line no-constant-condition
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            clearTimeout(streamTimeout!); // Clear previous timeout
+
+            const chunk = decoder.decode(value, { stream: true });
+            botResponseStream += chunk;
+            setResponseStream((prev) => prev + chunk);
+
+            resetTimeout(); // Reset timeout for next chunk
+          }
+        } finally {
+          if (streamTimeout) {
+            clearTimeout(streamTimeout);
+          }
+        }
+
+        const userMessageWithImages: ChatMessage = {
+          role: "user",
+          content: currentPromptRef.current,
+          ...(base64Images.length > 0 && { images: base64Images }),
+          ...(currentAttachmentsRef.current.length > 0 && {
+            attachments: currentAttachmentsRef.current,
+          }),
+        };
+
+        setConversationHistory((prevHistory) => [
+          ...prevHistory,
+          userMessageWithImages,
+          { role: "assistant", content: botResponseStream },
+        ]);
+      } catch (error) {
+        // Check if error is from abort
+        if (error instanceof Error && error.name === "AbortError") {
+          // Silently handle abort - stopGeneration already saved the partial response
+          return;
+        }
+        console.error("Error fetching response:", error);
+
+        // Show error toast with details
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error";
+        toast.error("Error fetching response", {
+          description: errorMessage,
+          duration: 5000,
+        });
       } finally {
-        if (streamTimeout) {
-          clearTimeout(streamTimeout);
+        setResponseStreamLoading(false);
+        setUserPromptPlaceholder(null);
+        setUploadedFiles([]);
+        abortControllerRef.current = null;
+        readerRef.current = null;
+        currentPromptRef.current = "";
+        currentAttachmentsRef.current = [];
+      }
+    },
+    [
+      prompt,
+      uploadedFiles,
+      currentModel,
+      systemMessage,
+      modelOptions,
+      conversationHistory,
+      responseStreamLoading,
+      isModelLoading,
+      setConversationHistory,
+      setUploadedFiles,
+    ]
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        // Prevent submission if generation is active or model is loading
+        if (responseStreamLoading || isModelLoading) {
+          event.preventDefault();
+          return;
         }
-      }
-
-      const userMessageWithImages: ChatMessage = {
-        role: "user",
-        content: currentPromptRef.current,
-        ...(base64Images.length > 0 && { images: base64Images }),
-        ...(currentAttachmentsRef.current.length > 0 && {
-          attachments: currentAttachmentsRef.current,
-        }),
-      };
-
-      setConversationHistory((prevHistory) => [
-        ...prevHistory,
-        userMessageWithImages,
-        { role: "assistant", content: botResponseStream },
-      ]);
-    } catch (error) {
-      // Check if error is from abort
-      if (error instanceof Error && error.name === "AbortError") {
-        // Silently handle abort - stopGeneration already saved the partial response
-        return;
-      }
-      console.error("Error fetching response:", error);
-      toast("Error fetching response.");
-    } finally {
-      setResponseStreamLoading(false);
-      setUserPromptPlaceholder(null);
-      setUploadedFiles([]);
-      abortControllerRef.current = null;
-      readerRef.current = null;
-      currentPromptRef.current = "";
-      currentAttachmentsRef.current = [];
-    }
-  };
-
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === "Enter" && !event.shiftKey) {
-      // Prevent submission if generation is active or model is loading
-      if (responseStreamLoading || isModelLoading) {
         event.preventDefault();
-        return;
+        handleAskPrompt(event);
       }
-      event.preventDefault();
-      handleAskPrompt(event);
-    }
-  };
+    },
+    [responseStreamLoading, isModelLoading, handleAskPrompt]
+  );
 
   const resetChat = useCallback(() => {
     setConversationHistory([]);
@@ -329,6 +376,8 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
         responseStream,
         systemMessage,
         setSystemMessage,
+        modelOptions,
+        setModelOptions,
         responseStreamLoading,
         conversationHistory,
         setConversationHistory,
