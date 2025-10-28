@@ -10,6 +10,7 @@ import { useChatContext } from "../../contexts/ChatContext";
 import { useModelContext } from "../../contexts/ModelContext";
 import { SettingsDialog } from "../dialogs/SettingsDialog";
 import { ModelSelectorPopover } from "./ModelSelectorPopover";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export const ChatNavbar = ({ className }: { className?: string }) => {
   const handleGithub = () => {
@@ -26,9 +27,9 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
     <nav className={cn("", className)}>
       <div className="flex justify-between h-full items-center gap-4">
         <div className="flex items-center gap-2">
-          {/* <SidebarTrigger /> */}
+          <SidebarTrigger />
           <Link to="/" className="flex items-center justify-between gap-2">
-            <span className="self-center text-base font-medium whitespace-nowrap text-foreground">
+            <span className="self-center text-base font-medium whitespace-nowrap text-foreground hidden md:block">
               Local AI
             </span>
           </Link>
@@ -42,7 +43,7 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             onOpenChange={setModelSelectorOpen}
           />
           {currentModel && (
-            <Badge variant="outline" className="">
+            <Badge variant="outline" className="hidden md:block">
               {currentModel.provider === "ollama" ? "Ollama" : "WebLLM"}
             </Badge>
           )}
@@ -55,11 +56,11 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             onClick={() => setSettingsOpen(true)}
           >
             <Settings />
-            Settings
+            <span className="hidden md:block">Settings</span>
           </Button>
           <Button size="sm" variant="ghost" onClick={resetChat}>
             <RotateCcw />
-            Reset
+            <span className="hidden md:block">Reset</span>
           </Button>
           <Button variant="ghost" size="icon" onClick={handleGithub}>
             <Github />

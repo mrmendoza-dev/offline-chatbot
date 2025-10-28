@@ -7,6 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import {
   Tooltip,
@@ -17,15 +18,14 @@ import { cn } from "@/lib/utils";
 import { PanelLeft, PanelRight, Settings, SquarePen } from "lucide-react";
 import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
-import { useApplicationContext } from "../../contexts/ApplicationContext";
 import { useChatContext } from "../../contexts/ChatContext";
 import { SettingsDialog } from "../dialogs/SettingsDialog";
 
 export const ChatSidebar = ({ className }: { className?: string }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
-  const { sidebarOpen, setSidebarOpen } = useApplicationContext();
   const { resetChat } = useChatContext();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { toggleSidebar, state } = useSidebar();
 
   // TODO: Replace with actual new chat logic
   const handleNewChat = () => {
@@ -35,7 +35,7 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
   return (
     <Sidebar
       className={cn("h-full relative", className)}
-      variant={isMobile ? "floating" : "sidebar"}
+      variant={isMobile ? "sidebar" : "sidebar"}
       collapsible={isMobile ? "offcanvas" : "icon"}
     >
       <SidebarContent>
@@ -45,18 +45,19 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
               <SidebarMenuItem key="Toggle Sidebar">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton
-                      asChild
-                      onClick={() => setSidebarOpen(!sidebarOpen)}
-                    >
-                      <a href="#">
-                        {sidebarOpen ? <PanelRight /> : <PanelLeft />}
-                        <span>{sidebarOpen ? "Collapse" : "Expand"}</span>
-                      </a>
+                    <SidebarMenuButton onClick={toggleSidebar}>
+                      {state === "expanded" ? <PanelRight /> : <PanelLeft />}
+                      <span>
+                        {state === "expanded" ? "Collapse" : "Expand"}
+                      </span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent side="right">
-                    <p>{sidebarOpen ? "Collapse sidebar" : "Expand sidebar"}</p>
+                    <p>
+                      {state === "expanded"
+                        ? "Collapse sidebar"
+                        : "Expand sidebar"}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </SidebarMenuItem>
@@ -70,11 +71,9 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
               <SidebarMenuItem key="New Chat">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <SidebarMenuButton asChild onClick={handleNewChat}>
-                      <span className="cursor-pointer">
-                        <SquarePen />
-                        <span>New Chat</span>
-                      </span>
+                    <SidebarMenuButton onClick={handleNewChat}>
+                      <SquarePen />
+                      <span>New Chat</span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent side="right">
@@ -127,14 +126,9 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
                 <SidebarMenuItem key="Settings">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        onClick={() => setSettingsOpen(true)}
-                      >
-                        <a href="#">
-                          <Settings />
-                          <span>Settings</span>
-                        </a>
+                      <SidebarMenuButton onClick={() => setSettingsOpen(true)}>
+                        <Settings />
+                        <span>Settings</span>
                       </SidebarMenuButton>
                     </TooltipTrigger>
                     <TooltipContent side="right">

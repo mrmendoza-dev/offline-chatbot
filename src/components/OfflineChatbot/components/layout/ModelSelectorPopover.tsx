@@ -225,7 +225,7 @@ export const ModelSelectorPopover = ({
             {isCurrentModelLoaded && (
               <span className="size-1.5 rounded-full bg-green-500 flex-shrink-0" />
             )}
-            <span className="max-w-32 truncate">
+            <span className="max-w-20 sm:max-w-32 truncate">
               {currentModel?.name || "No model loaded"}
             </span>
           </div>
