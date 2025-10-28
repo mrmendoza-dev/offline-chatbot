@@ -19,7 +19,7 @@ import { useState } from "react";
 import { useMediaQuery } from "react-responsive";
 import { useApplicationContext } from "../../contexts/ApplicationContext";
 import { useChatContext } from "../../contexts/ChatContext";
-import { SettingsDialog } from "../SettingsDialog";
+import { SettingsDialog } from "../dialogs/SettingsDialog";
 
 export const ChatSidebar = ({ className }: { className?: string }) => {
   const isMobile = useMediaQuery({ maxWidth: 768 });
@@ -31,35 +31,6 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
   const handleNewChat = () => {
     resetChat();
   };
-
-  // const chats = [
-  //   {
-  //     title: "Chat 1",
-  //     messages: [
-  //       {
-  //         role: "user",
-  //         content: "Hello, how are you?",
-  //       },
-  //       {
-  //         role: "assistant",
-  //         content: "I'm good, thank you!",
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     title: "Chat 2",
-  //     messages: [],
-  //   },
-  //   {
-  //     title: "Chat 3",
-  //     messages: [
-  //       {
-  //         role: "user",
-  //         content: "Hello, how are you?",
-  //       },
-  //     ],
-  //   },
-  // ];
 
   return (
     <Sidebar
@@ -100,10 +71,10 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <SidebarMenuButton asChild onClick={handleNewChat}>
-                      <a href="#">
+                      <span className="cursor-pointer">
                         <SquarePen />
                         <span>New Chat</span>
-                      </a>
+                      </span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent side="right">

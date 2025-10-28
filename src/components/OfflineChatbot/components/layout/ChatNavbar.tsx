@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { useApplicationContext } from "../../contexts/ApplicationContext";
 import { useChatContext } from "../../contexts/ChatContext";
 import { useModelContext } from "../../contexts/ModelContext";
-import { SettingsDialog } from "../SettingsDialog";
+import { SettingsDialog } from "../dialogs/SettingsDialog";
 import { ModelSelectorPopover } from "./ModelSelectorPopover";
 
 export const ChatNavbar = ({ className }: { className?: string }) => {
@@ -17,8 +17,7 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
   };
 
   const { resetChat } = useChatContext();
-  const { models, currentModel, setCurrentModel, isLoading } =
-    useModelContext();
+  const { currentModel, setCurrentModel, isLoading } = useModelContext();
   const { modelSelectorOpen, setModelSelectorOpen } = useApplicationContext();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -36,7 +35,6 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
 
           {/* Model selector popover */}
           <ModelSelectorPopover
-            models={models}
             currentModel={currentModel}
             setCurrentModel={setCurrentModel}
             isLoading={isLoading}
@@ -44,7 +42,7 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
             onOpenChange={setModelSelectorOpen}
           />
           {currentModel && (
-            <Badge variant="outline" className="ml-1">
+            <Badge variant="outline" className="">
               {currentModel.provider === "ollama" ? "Ollama" : "WebLLM"}
             </Badge>
           )}

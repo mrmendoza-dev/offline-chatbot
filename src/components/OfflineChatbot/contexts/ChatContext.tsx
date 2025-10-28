@@ -7,12 +7,12 @@ import {
   useState,
 } from "react";
 import { toast } from "sonner";
+import { modelSupportsVision } from "../config/model-configs";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { generateDocumentString } from "../services/message.service";
 import { sendChatMessage } from "../services/model.service";
 import type { ChatMessage, ModelOptions } from "../types/chat.types";
 import { convertImagesToBase64 } from "../utils/attachment/conversion";
-import { supportsVision } from "../utils/modelUtils";
 import { useAttachment } from "./AttachmentContext";
 import { useModelContext } from "./ModelContext";
 
@@ -182,17 +182,17 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
             : [];
 
         const hasImages = base64Images.length > 0;
-        const modelSupportsVision = supportsVision(currentModel);
+        const supportsVision = modelSupportsVision(currentModel);
 
-        if (hasImages && !modelSupportsVision) {
+        if (hasImages && !supportsVision) {
           toast.warning(
-            "Current model doesn't support vision. Images will be ignored.",
+            "This model doesn't support vision. Images will be ignored.",
             { duration: 4000 }
           );
         }
 
         // Only send images if model supports them
-        const imagesToSend = modelSupportsVision ? base64Images : undefined;
+        const imagesToSend = supportsVision ? base64Images : undefined;
 
         const documentString =
           uploadedTextFiles.length > 0

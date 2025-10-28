@@ -22,7 +22,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import { useChatContext } from "../contexts/ChatContext";
+import { useChatContext } from "../../contexts/ChatContext";
 
 interface SettingsDialogProps {
   open: boolean;

@@ -8,7 +8,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { Code, File, FileText, Image, X } from "lucide-react";
 import { useState } from "react";
-import type { UploadedFile } from "../types/attachment.types";
+import type { UploadedFile } from "../../types/attachment.types";
 
 interface FilePreviewProps {
   file: UploadedFile;

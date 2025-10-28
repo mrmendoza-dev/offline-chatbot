@@ -12,15 +12,15 @@ import { AnimatePresence } from "framer-motion";
 import { Camera, Paperclip, Send, Settings, Square } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
-import { useAttachment } from "../contexts/AttachmentContext";
-import { useChatContext } from "../contexts/ChatContext";
-import { useModelContext } from "../contexts/ModelContext";
-import { processFiles } from "../utils/attachment/conversion";
-import { captureScreen } from "../utils/deviceUtility";
-import { supportsVision } from "../utils/modelUtils";
-import { FilePreview } from "./FilePreview";
-import { SettingsDialog } from "./SettingsDialog";
-import { AttachmentLoadingPlaceholder } from "./attachments/AttachmentLoadingPlaceholder";
+import { modelSupportsVision } from "../../config/model-configs";
+import { useAttachment } from "../../contexts/AttachmentContext";
+import { useChatContext } from "../../contexts/ChatContext";
+import { useModelContext } from "../../contexts/ModelContext";
+import { processFiles } from "../../utils/attachment/conversion";
+import { captureScreen } from "../../utils/deviceUtility";
+import { AttachmentLoadingPlaceholder } from "../attachments/AttachmentLoadingPlaceholder";
+import { SettingsDialog } from "../dialogs/SettingsDialog";
+import { FilePreview } from "../ui/FilePreview";
 
 export const ChatInput = memo(() => {
   const {
@@ -101,6 +101,7 @@ export const ChatInput = memo(() => {
         id="file-upload"
         type="file"
         multiple
+        accept={modelSupportsVision(currentModel) ? "image/*" : undefined}
         onChange={handleFileUpload}
         className="hidden"
         ref={fileInputRef}
@@ -151,7 +152,7 @@ export const ChatInput = memo(() => {
                   <p>Attach file</p>
                 </TooltipContent>
               </Tooltip>
-              {supportsVision(currentModel) && (
+              {modelSupportsVision(currentModel) && (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button

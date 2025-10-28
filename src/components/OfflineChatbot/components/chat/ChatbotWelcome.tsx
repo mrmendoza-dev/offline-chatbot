@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { useApplicationContext } from "../contexts/ApplicationContext";
+import { useApplicationContext } from "../../contexts/ApplicationContext";
 
 const GITHUB_URL = "https://github.com/mrmendoza-dev/offline-chatbot";
 

@@ -1,5 +1,5 @@
-import { ChatComponent } from "../ChatComponent";
 import { cn } from "@/lib/utils";
+import { ChatComponent } from "../chat/ChatComponent";
 
 export const ChatMainContent = ({ className }: { className?: string }) => {
   return (
@@ -8,5 +8,3 @@ export const ChatMainContent = ({ className }: { className?: string }) => {
     </main>
   );
 };
-
-

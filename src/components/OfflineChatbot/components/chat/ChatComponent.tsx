@@ -1,12 +1,11 @@
 import { Spinner } from "@/components/ui/spinner";
 import { useEffect, useRef } from "react";
-import { useChatContext } from "../contexts/ChatContext";
-import type { ChatMessage as ChatMessageType } from "../types/chat.types";
+import { useChatContext } from "../../contexts/ChatContext";
+import type { ChatMessage as ChatMessageType } from "../../types/chat.types";
+import { ScrollToTopButton } from "../ui/ScrollToTopButton";
 import { ChatInput } from "./ChatInput";
+import { ChatMessage } from "./ChatMessage";
 import { ChatbotWelcome } from "./ChatbotWelcome";
-import { ScrollToTopButton } from "./ScrollToTopButton";
-import { ChatMessage } from "./chat/ChatMessage";
-
 export const ChatComponent = () => {
   const {
     userPromptPlaceholder,

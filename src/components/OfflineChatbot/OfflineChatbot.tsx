@@ -31,7 +31,7 @@ const OfflineChatbotUI = () => {
       },
       {
         key: "Escape",
-        global: true, // Allow Esc to work even when typing in input
+        global: true,
         handler: () => {
           if (responseStreamLoading) {
             stopGeneration();

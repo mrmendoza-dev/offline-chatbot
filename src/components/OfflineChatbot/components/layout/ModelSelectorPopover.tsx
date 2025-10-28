@@ -1,29 +1,24 @@
 import { Button } from "@/components/ui/button";
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Progress } from "@/components/ui/progress";
-import { cn } from "@/lib/utils";
-import { Check, ChevronDown, RefreshCw } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useModelContext } from "../../contexts/ModelContext";
 import { fetchLoadedModels, loadModel } from "../../services/model.service";
 import type { LoadedModel, OllamaModel } from "../../types/chat.types";
 import { BASE_URL } from "../../utils/api";
+import {
+  CurrentModelSection,
+  OllamaModelsSection,
+  WebLLMModelsSection,
+} from "../ModelSelector";
 
 interface ModelSelectorPopoverProps {
-  models: OllamaModel[];
   currentModel: OllamaModel | null;
   setCurrentModel: (model: OllamaModel) => void;
   isLoading: boolean;
@@ -32,7 +27,6 @@ interface ModelSelectorPopoverProps {
 }
 
 export const ModelSelectorPopover = ({
-  models,
   currentModel,
   setCurrentModel,
   isLoading,
@@ -44,7 +38,10 @@ export const ModelSelectorPopover = ({
     setIsModelLoading,
     loadWebLLMModel,
     webLLMLoadProgress,
+    // ollamaModels,
+    webLLMModels,
   } = useModelContext();
+  const ollamaModels: OllamaModel[] = [];
   const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
   const [loadingCache, setLoadingCache] = useState(false);
   const [internalPopoverOpen, setInternalPopoverOpen] = useState(false);
@@ -65,7 +62,11 @@ export const ModelSelectorPopover = ({
       const loaded = await fetchLoadedModels();
       setLoadedModels(loaded);
     } catch (error) {
-      console.error("Failed to fetch loaded models:", error);
+      // Silently fail - server might not be running (e.g., using WebLLM only)
+      console.debug(
+        "Could not fetch loaded models (server may be offline):",
+        error
+      );
     } finally {
       setLoadingCache(false);
     }
@@ -86,10 +87,10 @@ export const ModelSelectorPopover = ({
       setOllamaServerStatus("online");
     } catch (error) {
       setOllamaServerStatus("offline");
-      // Only show error toast if popover is open (don't spam on mount)
-      if (popoverOpen && error instanceof Error) {
-        console.error("Ollama server check failed:", error);
-      }
+      // Silently handle offline status - not an error if using WebLLM only
+      console.debug(
+        "Ollama server is offline (this is normal if using WebLLM only)"
+      );
     }
   };
 
@@ -102,7 +103,11 @@ export const ModelSelectorPopover = ({
 
   const handleLoadWebLLMModel = async () => {
     if (!selectedWebLLMModel) return;
+
+    // Load the model (this will update currentModel in context)
     await loadWebLLMModel(selectedWebLLMModel);
+
+    // Only clear after successful load
     setSelectedWebLLMModel(null);
     setPopoverOpen(false);
   };
@@ -114,6 +119,9 @@ export const ModelSelectorPopover = ({
       setPopoverOpen(false);
       return;
     }
+
+    // Clear WebLLM selection when switching to Ollama
+    setSelectedWebLLMModel(null);
 
     setIsModelLoading(true);
     const loadingToast = toast.loading(`Loading ${model.name}...`);
@@ -160,8 +168,8 @@ export const ModelSelectorPopover = ({
     if (currentModel.provider === "webllm" && isWebLLMReady) {
       return {
         name: currentModel.name,
-        provider: "WebLLM",
-        isLoaded: true,
+        provider: "WebLLM" as const,
+        isLoaded: true as const,
       };
     }
 
@@ -172,8 +180,8 @@ export const ModelSelectorPopover = ({
       if (loadedModel) {
         return {
           name: loadedModel.name,
-          provider: "Ollama",
-          isLoaded: true,
+          provider: "Ollama" as const,
+          isLoaded: true as const,
           size: loadedModel.size,
           processor: loadedModel.processor,
           until: loadedModel.until,
@@ -185,10 +193,6 @@ export const ModelSelectorPopover = ({
   };
 
   const currentLoadedInfo = getCurrentLoadedInfo();
-
-  // Separate models by provider
-  const ollamaModels = models.filter((m) => m.provider === "ollama");
-  const webLLMModels = models.filter((m) => m.provider === "webllm");
 
   // Helper to check if a model is currently loaded in memory
   const checkModelLoaded = (model: OllamaModel) => {
@@ -208,8 +212,6 @@ export const ModelSelectorPopover = ({
   const formatModelSize = (size: number) => {
     return `${(size / 1024 / 1024 / 1024).toFixed(1)} GB`;
   };
-
-  const BACKEND_PORT = import.meta.env.VITE_API_PORT || 5001;
 
   return (
     <Popover open={popoverOpen} onOpenChange={handlePopoverOpen}>
@@ -232,232 +234,42 @@ export const ModelSelectorPopover = ({
       </PopoverTrigger>
       <PopoverContent className="w-80" align="start">
         <div className="space-y-4">
-          {/* Unified Currently Loaded Section */}
-          {currentLoadedInfo && (
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-sm font-medium">Currently Loaded</h4>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6"
-                  onClick={refreshLoadedModels}
-                  disabled={loadingCache}
-                >
-                  <RefreshCw
-                    className={cn("h-3 w-3", loadingCache && "animate-spin")}
-                  />
-                </Button>
-              </div>
-              <div className="text-xs space-y-0.5 border rounded p-2 bg-card border-border">
-                <div className="font-medium flex items-center gap-1 w-full">
-                  <span className="size-1.5 rounded-full bg-green-500" />
-                  <span className="truncate">{currentLoadedInfo.name}</span>
-                </div>
-                {currentLoadedInfo.provider === "Ollama" && (
-                  <>
-                    <div className="text-muted-foreground">
-                      {currentLoadedInfo.size} • {currentLoadedInfo.processor}
-                    </div>
-                    <div className="text-muted-foreground">
-                      Unloads {currentLoadedInfo.until}
-                    </div>
-                  </>
-                )}
+          {/* Currently Loaded Section */}
+          <CurrentModelSection
+            currentLoadedInfo={currentLoadedInfo}
+            loadingCache={loadingCache}
+            onRefresh={refreshLoadedModels}
+          />
 
-                {currentLoadedInfo.provider === "WebLLM" && (
-                  <div className="text-muted-foreground">
-                    WebLLM Running in browser
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {!currentLoadedInfo && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">Currently Loaded</h4>
-              <p className="text-xs text-muted-foreground">
-                No models currently loaded
-              </p>
-            </div>
-          )}
-
-          {/* Separator */}
-          <div className="border-t" />
+          <Separator />
 
           {/* Ollama Models Section */}
-          {ollamaModels.length > 0 && (
-            <div>
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <h4 className="text-sm font-medium">Ollama Models</h4>
-                <div className="flex items-center gap-1">
-                  <div
-                    className={cn(
-                      "size-1.5 rounded-full flex-shrink-0",
-                      ollamaServerStatus === "online" && "bg-green-500",
-                      ollamaServerStatus === "offline" && "bg-red-500",
-                      ollamaServerStatus === "checking" &&
-                        "bg-yellow-500 animate-pulse"
-                    )}
-                    title={
-                      ollamaServerStatus === "online"
-                        ? "Ollama server is running"
-                        : ollamaServerStatus === "offline"
-                        ? "Ollama server is not running"
-                        : "Checking Ollama server status"
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {ollamaServerStatus === "online"
-                      ? "Connected to port"
-                      : "Disconnected from port"}{" "}
-                    {BACKEND_PORT}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-1">
-                {ollamaModels.map((model: OllamaModel) => {
-                  const isLoaded = checkModelLoaded(model);
-                  return (
-                    <button
-                      key={model.model}
-                      onClick={() => handleModelClick(model)}
-                      disabled={isModelLoading}
-                      className={cn(
-                        "w-full px-2 py-1.5 rounded hover:bg-accent transition-colors text-left",
-                        currentModel?.model === model.model &&
-                          "bg-accent font-medium",
-                        isModelLoading && "opacity-70 cursor-not-allowed"
-                      )}
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          {isLoaded && (
-                            <span className="size-1.5 rounded-full bg-green-500 flex-shrink-0" />
-                          )}
-                          <span className="text-sm">
-                            {model.name || "Unknown Model"}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-                            {model.details?.parameter_size || "Unknown"}
-                          </span>
-                          <span className="text-xs px-1.5 py-0.5 rounded bg-secondary text-secondary-foreground">
-                            {formatModelSize(model.size)}
-                          </span>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-
-                {/* Browse More Models Button */}
-                <Button
-                  variant="outline"
-                  className="w-full mt-2"
-                  onClick={() =>
-                    window.open("https://ollama.com/search", "_blank")
-                  }
-                >
-                  Browse Models on Ollama
-                </Button>
-              </div>
-            </div>
-          )}
+          <OllamaModelsSection
+            ollamaModels={ollamaModels}
+            currentModel={currentModel}
+            isModelLoading={isModelLoading}
+            ollamaServerStatus={ollamaServerStatus}
+            onModelClick={handleModelClick}
+            formatModelSize={formatModelSize}
+            checkModelLoaded={checkModelLoaded}
+          />
 
           {/* Separator */}
-          {ollamaModels.length > 0 && webLLMModels.length > 0 && (
-            <div className="border-t" />
-          )}
+          {webLLMModels.length > 0 && <Separator />}
 
           {/* WebLLM Models Section */}
           {webLLMModels.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium mb-2">WebLLM Models</h4>
-              <Popover
-                open={webLLMSelectOpen}
-                onOpenChange={setWebLLMSelectOpen}
-              >
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-between"
-                    disabled={isModelLoading}
-                  >
-                    <span className="text-sm max-w-48 truncate">
-                      {currentModel?.provider === "webllm"
-                        ? currentModel.name
-                        : selectedWebLLMModel
-                        ? selectedWebLLMModel.name
-                        : "Select WebLLM model..."}
-                    </span>
-                    <ChevronDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[400px] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Search models..." />
-                    <CommandList>
-                      <CommandEmpty>No model found.</CommandEmpty>
-                      <CommandGroup>
-                        {webLLMModels.map((model) => (
-                          <CommandItem
-                            key={model.model}
-                            value={model.name}
-                            onSelect={() => {
-                              setSelectedWebLLMModel(model);
-                              setWebLLMSelectOpen(false);
-                            }}
-                          >
-                            <Check
-                              className={cn(
-                                "mr-2 h-4 w-4",
-                                currentModel?.model === model.model ||
-                                  selectedWebLLMModel?.model === model.model
-                                  ? "opacity-100"
-                                  : "opacity-0"
-                              )}
-                            />
-                            {model.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-
-              {/* Load Button and Progress */}
-              {selectedWebLLMModel && (
-                <div className="mt-2 space-y-2">
-                  {!webLLMLoadProgress && (
-                    <>
-                      <Button
-                        onClick={handleLoadWebLLMModel}
-                        className="w-full"
-                        disabled={isModelLoading}
-                      >
-                        Load Model
-                      </Button>
-                      <p className="text-xs text-muted-foreground text-center px-2">
-                        Verify model requirements and available system resources
-                        before loading
-                      </p>
-                    </>
-                  )}
-                  {webLLMLoadProgress && (
-                    <>
-                      <Progress value={webLLMLoadProgress.progress * 100} />
-                      <p className="text-xs text-muted-foreground">
-                        {webLLMLoadProgress.text}
-                      </p>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+            <WebLLMModelsSection
+              webLLMModels={webLLMModels}
+              currentModel={currentModel}
+              selectedWebLLMModel={selectedWebLLMModel}
+              isModelLoading={isModelLoading}
+              webLLMLoadProgress={webLLMLoadProgress}
+              webLLMSelectOpen={webLLMSelectOpen}
+              setWebLLMSelectOpen={setWebLLMSelectOpen}
+              setSelectedWebLLMModel={setSelectedWebLLMModel}
+              onLoadWebLLMModel={handleLoadWebLLMModel}
+            />
           )}
         </div>
       </PopoverContent>

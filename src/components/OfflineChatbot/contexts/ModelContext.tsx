@@ -16,7 +16,8 @@ import {
 import type { OllamaModel } from "../types/chat.types";
 
 interface ModelContextType {
-  models: OllamaModel[];
+  ollamaModels: OllamaModel[];
+  webLLMModels: OllamaModel[];
   currentModel: OllamaModel | null;
   setCurrentModel: (model: OllamaModel | null) => void;
   isLoading: boolean;
@@ -34,7 +35,8 @@ interface ModelProviderProps {
 }
 
 export const ModelProvider = ({ children }: ModelProviderProps) => {
-  const [models, setModels] = useState<OllamaModel[]>([]);
+  const [ollamaModels, setOllamaModels] = useState<OllamaModel[]>([]);
+  const [webLLMModels, setWebLLMModels] = useState<OllamaModel[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModelLoading, setIsModelLoading] = useState(false);
   const [webLLMLoadProgress, setWebLLMLoadProgress] = useState<{
@@ -49,24 +51,19 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
   const refreshModels = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [ollamaModels, webLLMModels] = await Promise.all([
+      const [fetchedOllamaModels, fetchedWebLLMModels] = await Promise.all([
         fetchModels().catch(() => []),
         Promise.resolve(fetchWebLLMModels()),
       ]);
-      const allModels = [...ollamaModels, ...webLLMModels];
-      setModels(allModels);
-
-      // If no current model is set, try to set the first available model
-      if (!currentModel && allModels.length > 0) {
-        setCurrentModel(allModels[0]);
-      }
+      setOllamaModels(fetchedOllamaModels);
+      setWebLLMModels(fetchedWebLLMModels);
     } catch (error) {
       console.error("Failed to fetch models:", error);
       toast.error("Failed to fetch models. Please check if Ollama is running.");
     } finally {
       setIsLoading(false);
     }
-  }, [currentModel, setCurrentModel]);
+  }, []);
 
   const loadWebLLMModel = useCallback(
     async (model: OllamaModel) => {
@@ -108,7 +105,8 @@ export const ModelProvider = ({ children }: ModelProviderProps) => {
   return (
     <ModelContext.Provider
       value={{
-        models,
+        ollamaModels,
+        webLLMModels,
         currentModel,
         setCurrentModel,
         isLoading,

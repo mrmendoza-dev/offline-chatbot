@@ -1,72 +1,20 @@
 import * as webllm from "@mlc-ai/web-llm";
 import type { ChatRequest, OllamaModel } from "../types/chat.types";
-
-let webLLMEngine: webllm.MLCEngine | null = null;
-let currentWebLLMModel: string | null = null;
+import { webLLMManager } from "../types/webllm.types";
+import { tokenService } from "./token.service";
 
 export const initializeWebLLM = async (
   model: string,
   onProgress?: (text: string, progress: number) => void
 ): Promise<void> => {
-  if (!webLLMEngine) {
-    webLLMEngine = new webllm.MLCEngine();
-  }
-
-  if (currentWebLLMModel === model) {
+  if (
+    webLLMManager.isInitialized() &&
+    webLLMManager.getCurrentModel() === model
+  ) {
     return;
   }
 
-  webLLMEngine.setInitProgressCallback((report) => {
-    if (onProgress) {
-      onProgress(report.text, report.progress);
-    }
-  });
-
-  await webLLMEngine.reload(model, {
-    temperature: 1.0,
-    top_p: 1,
-  });
-
-  currentWebLLMModel = model;
-};
-
-// Helper to estimate token count (rough approximation)
-const estimateTokens = (text: string): number => {
-  // Rough approximation: 1 token ≈ 4 characters for English text
-  return Math.ceil(text.length / 4);
-};
-
-// Truncate conversation history to fit within context window
-const truncateConversationHistory = (
-  history: ChatRequest["conversationHistory"],
-  systemMessage: string,
-  prompt: string,
-  maxTokens: number = 800
-): ChatRequest["conversationHistory"] => {
-  const systemTokens = estimateTokens(systemMessage);
-  const promptTokens = estimateTokens(prompt);
-  const reservedTokens = systemTokens + promptTokens + 100; // +100 buffer
-  const availableTokens = maxTokens - reservedTokens;
-
-  if (availableTokens <= 0) {
-    // If even the prompt is too large, return empty history
-    return [];
-  }
-
-  // Calculate tokens used by history, going backwards
-  let tokensUsed = 0;
-  const truncatedHistory: ChatRequest["conversationHistory"] = [];
-
-  for (let i = history.length - 1; i >= 0; i--) {
-    const messageTokens = estimateTokens(history[i].content || "");
-    if (tokensUsed + messageTokens > availableTokens) {
-      break;
-    }
-    tokensUsed += messageTokens;
-    truncatedHistory.unshift(history[i]);
-  }
-
-  return truncatedHistory;
+  await webLLMManager.initialize(model, onProgress || undefined);
 };
 
 export const sendWebLLMMessage = async (
@@ -74,7 +22,10 @@ export const sendWebLLMMessage = async (
   signal?: AbortSignal
 ): Promise<ReadableStream<Uint8Array>> => {
   // Auto-initialize engine if not already loaded or if model changed
-  if (!webLLMEngine || currentWebLLMModel !== request.model) {
+  if (
+    !webLLMManager.isInitialized() ||
+    webLLMManager.getCurrentModel() !== request.model
+  ) {
     try {
       await initializeWebLLM(request.model);
     } catch (error) {
@@ -92,26 +43,31 @@ export const sendWebLLMMessage = async (
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       try {
-        // Truncate conversation history to fit within small context window
-        const truncatedHistory = truncateConversationHistory(
+        // WebLLM models typically have smaller context windows
+        // Conservative limit to avoid errors
+        const webLLMContextWindow = 2048;
+
+        // Validate context window usage
+        tokenService.validateContextWindow(
           request.conversationHistory,
           request.systemMessage,
           request.prompt,
-          800 // Conservative limit for browser models
+          webLLMContextWindow,
+          100 // buffer
         );
 
         const messages = [
           { role: "system" as const, content: request.systemMessage },
-          ...truncatedHistory,
+          ...request.conversationHistory,
           {
             role: "user" as const,
             content: request.prompt,
           },
         ];
 
-        const completion = await webLLMEngine!.chat.completions.create({
+        const completion = await webLLMManager.createCompletion({
           stream: true,
-          messages: messages as any,
+          messages,
           temperature: request.options?.temperature ?? 1.0,
           top_p: request.options?.top_p ?? 1.0,
           seed: request.options?.seed,

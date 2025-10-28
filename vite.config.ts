@@ -19,11 +19,7 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024, // 10 MB (increased from 2 MB)
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
       },
-      includeAssets: [
-        "favicon/favicon.ico",
-        "favicon/apple-touch-icon.png",
-        "favicon/masked-icon.svg",
-      ],
+      includeAssets: ["favicon/favicon.ico", "favicon/apple-touch-icon.png"],
       manifest: {
         name: "Offline Chatbot",
         short_name: "Local AI",

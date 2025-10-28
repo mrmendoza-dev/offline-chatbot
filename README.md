@@ -1,6 +1,10 @@
 # Offline AI Chatbot
+This project is created with the goal of providing a local AI chatbot interface that works offline, and is completely free, private, and open source.
+Chat with AI models locally using either **Ollama** (server-based) or **WebLLM** (browser-based) without requiring internet connectivity.
 
-A modern browser application providing a clean interface for interacting with AI models **completely offline**. Chat with AI models locally using either **Ollama** (server-based) or **WebLLM** (browser-based) without requiring internet connectivity.
+## Legacy Version
+The previous implementation focuses solely around the Ollama ecosystem and API, with no support for WebLLM. Some may find this version more suitable with no need for browser-based models.
+You can find the original version here: [Offline Chatbot v1](https://github.com/mrmendoza-dev/offline-chatbot-v1)
 
 ## Features
 
