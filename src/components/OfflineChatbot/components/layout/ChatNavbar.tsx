@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
 import { Github, Moon, RotateCcw, Settings, Sun } from "lucide-react";
@@ -10,7 +11,6 @@ import { useChatContext } from "../../contexts/ChatContext";
 import { useModelContext } from "../../contexts/ModelContext";
 import { SettingsDialog } from "../dialogs/SettingsDialog";
 import { ModelSelectorPopover } from "./ModelSelectorPopover";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export const ChatNavbar = ({ className }: { className?: string }) => {
   const handleGithub = () => {
@@ -27,8 +27,11 @@ export const ChatNavbar = ({ className }: { className?: string }) => {
     <nav className={cn("", className)}>
       <div className="flex justify-between h-full items-center gap-4">
         <div className="flex items-center gap-2">
-          <SidebarTrigger />
-          <Link to="/" className="flex items-center justify-between gap-2">
+          <SidebarTrigger className="md:hidden" />
+          <Link
+            to="/"
+            className="flex items-center justify-between gap-2 md:hidden"
+          >
             <span className="self-center text-base font-medium whitespace-nowrap text-foreground hidden md:block">
               Local AI
             </span>

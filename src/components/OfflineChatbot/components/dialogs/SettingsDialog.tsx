@@ -56,7 +56,12 @@ export const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
           </div>
 
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Model Parameters</h3>
+            <div>
+              <h3 className="text-lg font-semibold">Model Parameters</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                These settings only apply to Ollama models
+              </p>
+            </div>
 
             <div className="space-y-2">
               <div className="flex items-center gap-2">

@@ -47,9 +47,7 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
                   <TooltipTrigger asChild>
                     <SidebarMenuButton onClick={toggleSidebar}>
                       {state === "expanded" ? <PanelRight /> : <PanelLeft />}
-                      <span>
-                        {state === "expanded" ? "Collapse" : "Expand"}
-                      </span>
+                      <span>Collapse</span>
                     </SidebarMenuButton>
                   </TooltipTrigger>
                   <TooltipContent side="right">
@@ -84,39 +82,6 @@ export const ChatSidebar = ({ className }: { className?: string }) => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-
-        {/* <SidebarGroup>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: sidebarOpen ? 1 : 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <SidebarGroupLabel>Chats</SidebarGroupLabel>
-          </motion.div>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <AnimatePresence>
-                {chats.map((chat) => (
-                  <SidebarMenuItem key={chat.title}>
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: sidebarOpen ? 1 : 0 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <SidebarMenuButton asChild>
-                        <a href="#">
-                          <span>{chat.title}</span>
-                        </a>
-                      </SidebarMenuButton>
-                    </motion.div>
-                  </SidebarMenuItem>
-                ))}
-              </AnimatePresence>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup> */}
 
         <div className="mt-auto">
           <SidebarGroup>

@@ -51,7 +51,7 @@ export const ChatProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [systemMessage, setSystemMessage] = useLocalStorage<string>(
     "systemMessage",
-    "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, etc."
+    "You are a helpful personal assistant. Please reply in Markdown format when necessary for headings, links, bold, code blocks, etc."
   );
 
   const [modelOptions, setModelOptions] = useLocalStorage<ModelOptions>(
