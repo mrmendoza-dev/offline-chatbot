@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { TokenService } from "../../src/components/OfflineChatbot/services/token.service";
-import type { ChatMessage } from "../../src/components/OfflineChatbot/types/chat.types";
+import { TokenService } from "../../src/components/offline-chatbot/services/token.service";
+import type { ChatMessage } from "../../src/components/offline-chatbot/types/chat.types";
 
 describe("TokenService", () => {
   let tokenService: TokenService;

@@ -1,4 +1,4 @@
-import { useHotkeys } from "@/components/OfflineChatbot/hooks/useHotkeys";
+import { useHotkeys } from "@/components/offline-chatbot/hooks/useHotkeys";
 import { renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 

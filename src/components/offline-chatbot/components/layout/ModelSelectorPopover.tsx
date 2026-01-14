@@ -16,7 +16,7 @@ import {
   CurrentModelSection,
   OllamaModelsSection,
   WebLLMModelsSection,
-} from "../ModelSelector";
+} from "../model-selector";
 
 interface ModelSelectorPopoverProps {
   currentModel: OllamaModel | null;

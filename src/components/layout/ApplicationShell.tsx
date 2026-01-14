@@ -1,4 +1,4 @@
-import { OfflineChatbot } from "@/components/OfflineChatbot/OfflineChatbot";
+import { OfflineChatbot } from "@/components/offline-chatbot/OfflineChatbot";
 
 export const ApplicationShell = () => {
   return (

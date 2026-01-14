@@ -30,7 +30,7 @@
       "@/hooks/*": ["./src/hooks/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/pages/*": ["./src/pages/*"],
-      "@/services/*": ["src/components/OfflineChatbot/services/*"],
+      "@/services/*": ["src/services/*"],
       "@/styles/*": ["./src/styles/*"],
       "@/utils/*": ["./src/utils/*"]
     }

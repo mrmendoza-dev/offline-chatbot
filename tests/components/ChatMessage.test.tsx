@@ -1,4 +1,4 @@
-import { ChatMessage } from "@/components/OfflineChatbot/components/chat/ChatMessage";
+import { ChatMessage } from "@/components/offline-chatbot/components/chat/ChatMessage";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 

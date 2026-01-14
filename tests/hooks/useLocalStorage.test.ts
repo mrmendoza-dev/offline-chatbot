@@ -1,14 +1,33 @@
-import { useLocalStorage } from "@/components/OfflineChatbot/hooks/useLocalStorage";
+import { useLocalStorage } from "@/components/offline-chatbot/hooks/useLocalStorage";
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+// Helper function to clear localStorage
+const clearLocalStorage = () => {
+  if (typeof localStorage !== "undefined") {
+    if (typeof localStorage.clear === "function") {
+      localStorage.clear();
+    } else {
+      // Fallback: remove all keys manually
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key !== null) {
+          keys.push(key);
+        }
+      }
+      keys.forEach((key) => localStorage.removeItem(key));
+    }
+  }
+};
+
 describe("useLocalStorage hook", () => {
   beforeEach(() => {
-    localStorage.clear();
+    clearLocalStorage();
   });
 
   afterEach(() => {
-    localStorage.clear();
+    clearLocalStorage();
   });
 
   it("should initialize with default value", () => {

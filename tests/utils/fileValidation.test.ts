@@ -2,7 +2,7 @@ import {
   filterAcceptedFiles,
   getFileCategory,
   validateFile,
-} from "@/components/OfflineChatbot/utils/attachment/validation";
+} from "@/components/offline-chatbot/utils/attachment/validation";
 import { describe, expect, it } from "vitest";
 
 describe("fileValidation utilities", () => {

@@ -1,21 +1,46 @@
 import { renderHook, waitFor } from "@testing-library/react";
 import { act } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { AttachmentProvider } from "../../src/components/OfflineChatbot/contexts/AttachmentContext";
+import { AttachmentProvider } from "../../src/components/offline-chatbot/contexts/AttachmentContext";
 import {
   ChatProvider,
   useChatContext,
-} from "../../src/components/OfflineChatbot/contexts/ChatContext";
-import { ModelProvider } from "../../src/components/OfflineChatbot/contexts/ModelContext";
+} from "../../src/components/offline-chatbot/contexts/ChatContext";
+import { ModelProvider } from "../../src/components/offline-chatbot/contexts/ModelContext";
 
 // Mock dependencies
-vi.mock("../../src/components/OfflineChatbot/services/model.service", () => ({
+vi.mock("../../src/components/offline-chatbot/services/model.service", () => ({
   sendChatMessage: vi.fn(),
   fetchModels: vi.fn(() => Promise.resolve([])),
 }));
 
 vi.mock("sonner", () => ({
   toast: vi.fn(),
+}));
+
+vi.mock("pdfjs-dist", () => ({
+  default: {
+    GlobalWorkerOptions: {
+      workerSrc: "",
+    },
+    version: "5.4.296",
+    getDocument: vi.fn(() => ({
+      promise: Promise.resolve({
+        numPages: 0,
+        getPage: vi.fn(),
+      }),
+    })),
+  },
+  GlobalWorkerOptions: {
+    workerSrc: "",
+  },
+  version: "5.4.296",
+  getDocument: vi.fn(() => ({
+    promise: Promise.resolve({
+      numPages: 0,
+      getPage: vi.fn(),
+    }),
+  })),
 }));
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (

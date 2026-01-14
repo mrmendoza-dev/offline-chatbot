@@ -1,37 +1,37 @@
 import {
   ChatProvider,
   useChatContext,
-} from "@/components/OfflineChatbot/contexts/ChatContext";
+} from "@/components/offline-chatbot/contexts/ChatContext";
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 // Mock the dependencies
-vi.mock("@/components/OfflineChatbot/contexts/AttachmentContext", () => ({
+vi.mock("@/components/offline-chatbot/contexts/AttachmentContext", () => ({
   useAttachment: () => ({
     uploadedFiles: [],
     setUploadedFiles: vi.fn(),
   }),
 }));
 
-vi.mock("@/components/OfflineChatbot/contexts/ModelContext", () => ({
+vi.mock("@/components/offline-chatbot/contexts/ModelContext", () => ({
   useModelContext: () => ({
     currentModel: { model: "test-model" },
   }),
 }));
 
-vi.mock("@/components/OfflineChatbot/hooks/useLocalStorage", () => ({
+vi.mock("@/components/offline-chatbot/hooks/useLocalStorage", () => ({
   useLocalStorage: () => ["", vi.fn()],
 }));
 
-vi.mock("@/components/OfflineChatbot/services/model.service", () => ({
+vi.mock("@/components/offline-chatbot/services/model.service", () => ({
   sendChatMessage: vi.fn(),
 }));
 
-vi.mock("@/components/OfflineChatbot/services/message.service", () => ({
+vi.mock("@/components/offline-chatbot/services/message.service", () => ({
   generateDocumentString: vi.fn(() => ""),
 }));
 
-vi.mock("@/components/OfflineChatbot/utils/attachment/conversion", () => ({
+vi.mock("@/components/offline-chatbot/utils/attachment/conversion", () => ({
   convertImagesToBase64: vi.fn(() => []),
 }));
 

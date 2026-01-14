@@ -187,7 +187,7 @@ npm run preview
 offline-chatbot/
 ├── src/                           # Frontend source
 │   ├── components/
-│   │   ├── OfflineChatbot/       # Main chatbot module
+│   │   ├── offline-chatbot/       # Main chatbot module
 │   │   │   ├── components/       # UI components
 │   │   │   │   ├── chat/        # Chat-specific components
 │   │   │   │   ├── layout/      # Layout components
