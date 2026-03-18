@@ -10,21 +10,25 @@ import { ChatAttachmentBlock } from "../attachments/ChatAttachmentBlock";
 import { MarkdownDisplay } from "../ui/markdown-display";
 
 interface ChatMessageProps {
+  className?: string;
   content: string;
   role: "user" | "assistant" | "system";
-  variant?: "default" | "placeholder";
+  /** Render as plain text instead of markdown (e.g. user placeholder, loading state) */
+  plainText?: boolean;
+  loading?: boolean;
   attachments?: AttachmentMetadata[];
 }
 
 export const ChatMessage = memo(
   ({
+    className,
     content,
     role,
-    variant = "default",
+    plainText = false,
+    loading = false,
     attachments = [],
   }: ChatMessageProps) => {
     const isUser = role === "user";
-    const isPlaceholder = variant === "placeholder";
 
     const handleCopy = useCallback(async () => {
       const success = await writeToClipboard(content);
@@ -35,28 +39,32 @@ export const ChatMessage = memo(
       }
     }, [content]);
 
+    const bubbleStyles = isUser ? "bg-secondary" : "bg-card";
+
     return (
       <div
         className={cn(
           "group relative p-4 max-w-[80%] w-fit rounded-sm",
+          className,
           isUser ? "ml-auto" : "mr-auto",
-          isPlaceholder && isUser
-            ? "bg-primary/10"
-            : isUser
-            ? "bg-secondary"
-            : "bg-card"
+          bubbleStyles
         )}
       >
-        {variant === "default" ? (
-          isUser ? (
-            <ReactMarkdown className="text-sm markdown prose max-w-none break-words whitespace-pre-wrap">
-              {content}
-            </ReactMarkdown>
-          ) : (
-            <MarkdownDisplay content={content} className="text-sm" />
-          )
+        {plainText ? (
+          <p
+            className={cn(
+              "text-sm break-words whitespace-pre-wrap",
+              loading && "text-shimmer"
+            )}
+          >
+            {content}
+          </p>
+        ) : isUser ? (
+          <ReactMarkdown className="text-sm markdown prose max-w-none break-words whitespace-pre-wrap">
+            {content}
+          </ReactMarkdown>
         ) : (
-          <p className="text-sm break-words whitespace-pre-wrap">{content}</p>
+          <MarkdownDisplay content={content} className="text-sm" />
         )}
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-3">

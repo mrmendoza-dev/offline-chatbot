@@ -7,7 +7,6 @@ import { useApplicationContext } from "./contexts/ApplicationContext";
 import { useChatContext } from "./contexts/ChatContext";
 import { Providers } from "./contexts/Providers";
 import { useHotkeys } from "./hooks/useHotkeys";
-import "./styles/index.css";
 
 export const OfflineChatbot = () => {
   return (

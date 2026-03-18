@@ -38,10 +38,9 @@ export const ModelSelectorPopover = ({
     setIsModelLoading,
     loadWebLLMModel,
     webLLMLoadProgress,
-    // ollamaModels,
+    ollamaModels,
     webLLMModels,
   } = useModelContext();
-  const ollamaModels: OllamaModel[] = [];
   const [loadedModels, setLoadedModels] = useState<LoadedModel[]>([]);
   const [loadingCache, setLoadingCache] = useState(false);
   const [internalPopoverOpen, setInternalPopoverOpen] = useState(false);

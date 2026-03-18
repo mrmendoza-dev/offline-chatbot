@@ -50,7 +50,7 @@ export const ChatContainer = () => {
               <ChatMessage
                 content={userPromptPlaceholder || ""}
                 role="user"
-                variant="placeholder"
+                plainText
               />
 
               <div className="relative mr-auto max-w-[80%]">

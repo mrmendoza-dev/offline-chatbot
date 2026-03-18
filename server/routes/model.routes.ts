@@ -19,6 +19,27 @@ router.get("/models", async (_req: Request, res: Response) => {
   }
 });
 
+// Load a model into Ollama memory (proxy to avoid CORS)
+router.post("/models/load", async (req: Request, res: Response) => {
+  try {
+    const { model } = req.body as { model: string };
+    if (!model) {
+      return res.status(400).json({ error: "Missing model name" });
+    }
+    await ollama.generate({
+      model,
+      prompt: "",
+      stream: false,
+      keep_alive: "5m",
+    });
+    logger.info(`Loaded model: ${model}`);
+    return res.status(200).json({ ok: true });
+  } catch (error) {
+    logger.error("Failed to load model:", error);
+    return res.status(500).json({ error: "Failed to load model" });
+  }
+});
+
 // Get currently loaded models from ollama ps
 router.get("/models/loaded", async (_req: Request, res: Response) => {
   try {

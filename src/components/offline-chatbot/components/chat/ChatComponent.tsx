@@ -1,4 +1,3 @@
-import { Spinner } from "@/components/ui/spinner";
 import { useEffect, useRef } from "react";
 import { useChatContext } from "../../contexts/ChatContext";
 import type { ChatMessage as ChatMessageType } from "../../types/chat.types";
@@ -32,7 +31,10 @@ export const ChatComponent = () => {
   return (
     <div className="relative bg-background flex flex-col h-full">
       <div className="overflow-y-auto flex-1">
-        <div ref={messagesStartRef} className="max-w-5xl mx-auto p-4 flex flex-col gap-4">
+        <div
+          ref={messagesStartRef}
+          className="max-w-5xl mx-auto p-4 flex flex-col gap-4"
+        >
           {!conversationHistory.length && !responseStreamLoading && (
             <ChatbotWelcome />
           )}
@@ -50,17 +52,19 @@ export const ChatComponent = () => {
               <ChatMessage
                 content={userPromptPlaceholder || ""}
                 role="user"
-                variant="placeholder"
+                plainText
               />
 
-              <div className="relative mr-auto max-w-[80%]">
-                <div className="absolute -left-8 top-4">
-                  <Spinner />
-                </div>
+              <div className="relative">
                 {responseStream ? (
                   <ChatMessage content={responseStream} role="assistant" />
                 ) : (
-                  <ChatMessage content="Generating..." role="assistant" />
+                  <ChatMessage
+                    content="Generating..."
+                    role="assistant"
+                    plainText
+                    loading
+                  />
                 )}
               </div>
             </>

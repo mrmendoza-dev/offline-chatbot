@@ -1,6 +1,6 @@
 import cors from "cors";
 import dotenv from "dotenv";
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import chatRoutes from "./routes/chat.routes.js";
 import modelRoutes from "./routes/model.routes.js";
 import { logger } from "./utils/logger.js";
@@ -24,8 +24,13 @@ app.get("/health", (_req: Request, res: Response) => {
   return res.status(200).json({ status: "ok", message: "Server is running" });
 });
 
-// Error handling middleware
-app.use((err: Error, _req: Request, res: Response) => {
+// 404 for unmatched routes
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({ error: "Not found" });
+});
+
+// Error handling middleware (must have 4 params for Express to recognize it)
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error("Error:", err);
   res.status(500).json({ error: "Internal server error" });
 });

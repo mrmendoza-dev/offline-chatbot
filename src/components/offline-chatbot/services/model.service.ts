@@ -3,18 +3,12 @@ import type {
   LoadedModel,
   OllamaModel,
 } from "../types/chat.types";
-import {
-  BASE_URL,
-  apiClient,
-  endpoints,
-  handleApiError,
-  ollamaClient,
-} from "../utils/api";
+import { BASE_URL, apiClient, handleApiError } from "../utils/api";
 import { sendWebLLMMessage } from "./provider.service";
 
 export const fetchModels = async (): Promise<OllamaModel[]> => {
   try {
-    const response = await ollamaClient.get(endpoints.ollama.tags);
+    const response = await apiClient.get("/models");
     const models = response.data.models || [];
     // Add provider field to all Ollama models
     return models.map((model: OllamaModel) => ({
@@ -39,13 +33,7 @@ export const fetchLoadedModels = async (): Promise<LoadedModel[]> => {
 
 export const loadModel = async (modelName: string): Promise<void> => {
   try {
-    // Send a minimal request to Ollama to load the model into memory
-    await ollamaClient.post("/generate", {
-      model: modelName,
-      prompt: "",
-      stream: false,
-      keep_alive: "5m", // Keep model loaded for 5 minutes
-    });
+    await apiClient.post("/models/load", { model: modelName });
   } catch (error) {
     console.error("Failed to load model:", error);
     throw new Error(handleApiError(error));
